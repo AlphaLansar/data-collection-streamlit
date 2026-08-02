@@ -2,21 +2,32 @@ import streamlit as st
 import subprocess
 import pandas as pd
 import os
+import time
+
 
 
 st.set_page_config(
-    page_title="Scraping",
+    page_title="Selenium Scraping",
     layout="wide"
 )
 
 
-st.title("🕷️ Module Web Scraping")
+
+st.title(
+    "Selenium Web Scraping"
+)
+
 
 
 st.write(
 """
-Cette interface permet de lancer la collecte automatique
-des données depuis les différentes sources.
+Module de collecte automatique des données
+depuis les sources web du projet.
+
+Technologie utilisée :
+- Selenium WebDriver
+- Python
+- Pandas
 """
 )
 
@@ -26,22 +37,41 @@ st.divider()
 
 
 
-source = st.selectbox(
-    "Choisir la source",
-    [
-        "Books To Scrape",
-        "Gaaraas Cars"
-    ]
+# ===============================
+# PARAMETRES SCRAPING
+# ===============================
+
+
+st.header(
+    "Configuration du scraping"
 )
 
 
 
-pages = st.number_input(
-    "Nombre de pages",
-    min_value=1,
-    max_value=100,
-    value=5
-)
+col1, col2 = st.columns(2)
+
+
+
+with col1:
+
+    source = st.selectbox(
+        "Source de données",
+        [
+            "Books To Scrape",
+            "Gaaraas Cars"
+        ]
+    )
+
+
+
+with col2:
+
+    pages = st.number_input(
+        "Nombre de pages à scraper",
+        min_value=1,
+        max_value=100,
+        value=5
+    )
 
 
 
@@ -49,39 +79,46 @@ st.divider()
 
 
 
+# ===============================
+# LANCEMENT
+# ===============================
+
+
 if st.button(
-    "🚀 Lancer scraping",
-    type="primary"
+    "Lancer le scraping"
 ):
 
-    with st.spinner(
-        "Scraping en cours..."
-    ):
+
+    progress = st.progress(0)
+
+
+    status = st.empty()
+
+
+
+    try:
 
 
         if source == "Books To Scrape":
 
 
-            scraper = [
+            command = [
                 "python",
                 "scraper/books_scraper.py",
                 "--pages",
                 str(pages)
             ]
 
-            raw_file = "data/raw/books.csv"
 
-            clean = [
-                "python",
-                "cleaning/clean_books.py"
-            ]
-
+            output_file = (
+                "data/raw/books.csv"
+            )
 
 
         else:
 
 
-            scraper = [
+            command = [
                 "python",
                 "scraper/cars_scraper.py",
                 "--pages",
@@ -89,72 +126,101 @@ if st.button(
             ]
 
 
-            raw_file = "data/raw/cars.csv"
+            output_file = (
+                "data/raw/cars.csv"
+            )
 
 
-            clean = [
-                "python",
-                "cleaning/clean_cars.py"
-            ]
+
+        status.info(
+            "Scraping en cours..."
+        )
+
+
+        progress.progress(30)
 
 
 
         result = subprocess.run(
-            scraper,
+            command,
             capture_output=True,
             text=True
         )
 
 
 
-        if result.returncode != 0:
+        progress.progress(80)
+
+
+
+        if result.returncode == 0:
+
+
+            progress.progress(100)
+
+
+            st.success(
+                "Scraping terminé avec succès"
+            )
+
+
+
+            st.subheader(
+                "Logs Selenium"
+            )
+
+
+            st.code(
+                result.stdout
+            )
+
+
+
+            if os.path.exists(output_file):
+
+
+                df = pd.read_csv(
+                    output_file
+                )
+
+
+                st.metric(
+                    "Nombre de lignes collectées",
+                    len(df)
+                )
+
+
+                with st.expander(
+                    "Aperçu des données"
+                ):
+
+                    st.dataframe(
+                        df.head(10),
+                        use_container_width=True
+                    )
+
+
+
+        else:
+
 
             st.error(
-                "Erreur scraping"
+                "Erreur pendant le scraping"
             )
+
 
             st.code(
                 result.stderr
             )
 
-            st.stop()
 
 
+    except Exception as e:
 
-        st.success(
-            "Scraping terminé"
+
+        st.error(
+            str(e)
         )
-
-
-        st.code(
-            result.stdout
-        )
-
-
-
-        # nettoyage automatique
-
-
-        clean_result = subprocess.run(
-            clean,
-            capture_output=True,
-            text=True
-        )
-
-
-
-        if clean_result.returncode == 0:
-
-            st.success(
-                "Nettoyage terminé"
-            )
-
-
-        else:
-
-            st.warning(
-                "Nettoyage échoué"
-            )
 
 
 
@@ -162,60 +228,70 @@ st.divider()
 
 
 
+# ===============================
+# INFORMATION
+# ===============================
+
+
 st.header(
-    "📊 Données brutes"
+    "Sources disponibles"
 )
 
 
 
-if source == "Books To Scrape":
-
-    file = "data/raw/books.csv"
-
-else:
-
-    file = "data/raw/cars.csv"
+col1,col2 = st.columns(2)
 
 
 
-if os.path.exists(file):
-
-
-    df = pd.read_csv(file)
-
-
-
-    col1,col2 = st.columns(2)
-
-
-
-    with col1:
-
-        st.metric(
-            "Nombre lignes",
-            len(df)
-        )
-
-
-    with col2:
-
-        st.metric(
-            "Nombre colonnes",
-            len(df.columns)
-        )
-
-
-
-    st.dataframe(
-        df.head(20),
-        use_container_width=True
-    )
-
-
-
-else:
+with col1:
 
 
     st.info(
-        "Aucune donnée disponible"
+"""
+Books To Scrape
+
+Pagination :
+Toutes les pages du catalogue
+
+Variables :
+- titre
+- prix
+- disponibilité
+- rating
+- reviews
+- description
+- catégorie
+- tax
+"""
     )
+
+
+
+with col2:
+
+
+    st.info(
+"""
+Gaaraas Cars
+
+Pagination :
+Pages des annonces Dakar Auto
+
+Variables :
+- marque
+- modèle
+- année
+- prix
+- kilométrage
+- transmission
+- région
+"""
+    )
+
+
+
+st.caption(
+"""
+Data Collection Project - Selenium Scraping Module
+"""
+)

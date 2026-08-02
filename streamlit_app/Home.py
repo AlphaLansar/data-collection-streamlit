@@ -2,7 +2,7 @@ import streamlit as st
 
 
 st.set_page_config(
-    page_title="Data Collection Application",
+    page_title="Data Collection Platform",
     page_icon="📊",
     layout="wide"
 )
@@ -10,23 +10,17 @@ st.set_page_config(
 
 
 st.title(
-    "📊 Data Collection & Analysis Platform"
+    "Data Collection & Analytics Platform"
 )
-
 
 
 st.write(
 """
-Bienvenue dans notre application de collecte,
-nettoyage et analyse de données.
+Application développée dans le cadre du projet d'examen
+Data Collection.
 
-Cette plateforme permet :
-
-- 🕷️ Collecter automatiquement les données web
-- 🧹 Nettoyer les données collectées
-- 📥 Télécharger les données brutes
-- 📊 Visualiser les résultats avec des dashboards interactifs
-- 📝 Evaluer l'application
+Cette plateforme permet de collecter, nettoyer, stocker
+et analyser des données issues du Web scraping.
 """
 )
 
@@ -36,28 +30,25 @@ st.divider()
 
 
 
-st.header(
-    "🚀 Modules disponibles"
-)
+st.header("Architecture du projet")
 
 
 
-col1,col2,col3,col4 = st.columns(4)
+col1, col2, col3, col4 = st.columns(4)
 
 
 
 with col1:
 
-    st.subheader(
-        "🕷️ Scraping"
-    )
+    st.subheader("1. Collecte")
 
     st.write(
     """
-    Collecte automatique des données
-    depuis les sources web.
-    
+    Extraction automatique des données
+    avec Selenium.
+
     Sources :
+
     - Books To Scrape
     - Gaaraas Cars
     """
@@ -67,14 +58,12 @@ with col1:
 
 with col2:
 
-    st.subheader(
-        "⬇️ Download"
-    )
+    st.subheader("2. Préparation")
 
     st.write(
     """
-    Téléchargement des données
-    brutes issues du scraping.
+    Nettoyage et transformation
+    des données avec Pandas.
     """
     )
 
@@ -82,17 +71,17 @@ with col2:
 
 with col3:
 
-    st.subheader(
-        "📊 Dashboard"
-    )
+    st.subheader("3. Stockage")
 
     st.write(
     """
-    Exploration interactive :
-    
-    - statistiques
-    - graphiques
-    - filtres
+    Base SQLite utilisant
+    SQLAlchemy.
+
+    Tables :
+
+    - books
+    - cars
     """
     )
 
@@ -100,14 +89,12 @@ with col3:
 
 with col4:
 
-    st.subheader(
-        "📝 Evaluation"
-    )
+    st.subheader("4. Analyse")
 
     st.write(
     """
-    Donner votre avis
-    sur l'application.
+    Dashboards interactifs,
+    statistiques et visualisations.
     """
     )
 
@@ -117,30 +104,30 @@ st.divider()
 
 
 
-st.header(
-    "📌 Sources de données"
-)
+st.header("Sources de données")
 
 
 
-col1,col2 = st.columns(2)
+col1, col2 = st.columns(2)
 
 
 
 with col1:
 
-    st.success(
+    st.info(
     """
-    📚 Books To Scrape
+    Books To Scrape
 
-    Variables :
+    Variables principales :
+
     - titre
     - prix
     - disponibilité
-    - rating
-    - catégorie
+    - note
     - reviews
+    - catégorie
     - description
+    - taxe
     """
     )
 
@@ -150,9 +137,10 @@ with col2:
 
     st.info(
     """
-    🚗 Gaaraas Cars
+    Gaaraas Cars
 
-    Variables :
+    Variables principales :
+
     - marque
     - modèle
     - année
@@ -169,15 +157,14 @@ st.divider()
 
 
 
-st.header(
-    "🛠️ Technologies utilisées"
-)
+st.header("Technologies")
 
 
 
 st.write(
 """
-Python | Selenium | BeautifulSoup | Pandas | SQL SQLite | Streamlit | Matplotlib
+Python | Selenium | Pandas | SQLAlchemy |
+SQLite | Streamlit | Matplotlib
 """
 )
 
@@ -189,6 +176,8 @@ st.divider()
 
 st.caption(
 """
-Projet d'examen Data Collection - Web Scraping, Cleaning and Deployment
+Projet réalisé par Alpha Abdoulaye Lansar
+Master Intelligence Artificielle
+Data Collection Project - 2026
 """
 )
