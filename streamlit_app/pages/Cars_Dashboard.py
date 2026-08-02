@@ -9,8 +9,7 @@ st.set_page_config(
 )
 
 
-st.title("🚗 Dashboard - Annonces automobiles Gaaraas")
-
+st.title("🚗 Cars Data Dashboard")
 
 
 FILE = "data/cleaned/cars_clean.csv"
@@ -28,55 +27,75 @@ df = load_data()
 
 
 
-st.success(
-    f"Dataset chargé : {df.shape[0]} voitures"
+st.sidebar.header("Filtres")
+
+
+
+if "brand" in df.columns:
+
+    brands = st.sidebar.multiselect(
+        "Marque",
+        df["brand"].dropna().unique(),
+        default=df["brand"].dropna().unique()
+    )
+
+    df = df[df["brand"].isin(brands)]
+
+
+
+if "year" in df.columns:
+
+    years = st.sidebar.slider(
+        "Année",
+        int(df["year"].min()),
+        int(df["year"].max()),
+        (
+            int(df["year"].min()),
+            int(df["year"].max())
+        )
+    )
+
+    df = df[
+        (df["year"]>=years[0])
+        &
+        (df["year"]<=years[1])
+    ]
+
+
+
+
+st.subheader("📊 Informations générales")
+
+
+col1,col2,col3,col4 = st.columns(4)
+
+
+
+col1.metric(
+    "Nombre voitures",
+    len(df)
 )
 
 
+if "price" in df.columns:
 
-# ==========================
-# INFORMATIONS GENERALES
-# ==========================
-
-
-st.header("📌 Informations générales")
-
-
-
-col1, col2, col3, col4 = st.columns(4)
-
-
-
-with col1:
-
-    st.metric(
-        "Nombre voitures",
-        len(df)
-    )
-
-
-
-with col2:
-
-    st.metric(
+    col2.metric(
         "Prix moyen",
-        f"{df['price'].mean():,.0f} FCFA"
+        round(df["price"].mean(),0)
     )
 
 
+if "year" in df.columns:
 
-with col3:
-
-    st.metric(
-        "Kilométrage moyen",
-        f"{df['mileage'].mean():,.0f} KM"
+    col3.metric(
+        "Année moyenne",
+        round(df["year"].mean(),0)
     )
 
 
+if "brand" in df.columns:
 
-with col4:
-
-    st.metric(
+    col4.metric(
         "Marques",
         df["brand"].nunique()
     )
@@ -87,142 +106,25 @@ st.divider()
 
 
 
-# ==========================
-# FILTRES
-# ==========================
+# Prix
 
+if "price" in df.columns:
 
-st.sidebar.header("Filtres")
+    st.subheader("💰 Distribution des prix")
 
 
-
-brands = st.sidebar.multiselect(
-
-    "Marque",
-
-    df["brand"].unique()
-
-)
-
-
-
-transmission = st.sidebar.multiselect(
-
-    "Transmission",
-
-    df["transmission"].unique()
-
-)
-
-
-
-filtered=df.copy()
-
-
-
-if brands:
-
-    filtered = filtered[
-        filtered["brand"].isin(brands)
-    ]
-
-
-
-if transmission:
-
-    filtered = filtered[
-        filtered["transmission"].isin(transmission)
-    ]
-
-
-
-
-
-st.subheader("📋 Données filtrées")
-
-
-st.dataframe(
-
-    filtered,
-
-    use_container_width=True
-
-)
-
-
-
-st.divider()
-
-
-
-# ==========================
-# VISUALISATIONS
-# ==========================
-
-
-
-st.header("📊 Analyse des données")
-
-
-
-col1,col2 = st.columns(2)
-
-
-
-with col1:
-
-
-    st.subheader(
-        "Nombre d'annonces par marque"
-    )
-
-
-    fig,ax=plt.subplots()
-
-
-    filtered["brand"].value_counts().plot(
-
-        kind="bar",
-
-        ax=ax
-
-    )
-
-
-    ax.set_xlabel("Marque")
-
-    ax.set_ylabel("Nombre")
-
-
-    st.pyplot(fig)
-
-
-
-
-with col2:
-
-
-    st.subheader(
-        "Distribution des prix"
-    )
-
-
-    fig,ax=plt.subplots()
+    fig,ax = plt.subplots()
 
 
     ax.hist(
-
-        filtered["price"],
-
+        df["price"].dropna(),
         bins=20
-
     )
 
 
     ax.set_xlabel(
-        "Prix FCFA"
+        "Prix"
     )
-
 
     ax.set_ylabel(
         "Nombre voitures"
@@ -234,64 +136,76 @@ with col2:
 
 
 
-# ==========================
-# RELATION PRIX ANNEE
-# ==========================
+# Marques
 
+if "brand" in df.columns:
+
+
+    st.subheader("🏷️ Marques populaires")
+
+
+    brands_count = (
+        df["brand"]
+        .value_counts()
+        .head(10)
+    )
+
+
+    st.bar_chart(
+        brands_count
+    )
+
+
+
+
+# Année prix
+
+if "year" in df.columns and "price" in df.columns:
+
+
+    st.subheader(
+        "📈 Relation année / prix"
+    )
+
+
+    fig,ax = plt.subplots()
+
+
+    ax.scatter(
+        df["year"],
+        df["price"]
+    )
+
+
+    ax.set_xlabel(
+        "Année"
+    )
+
+
+    ax.set_ylabel(
+        "Prix"
+    )
+
+
+    st.pyplot(fig)
+
+
+
+
+# Tableau
 
 st.subheader(
-    "Relation année - prix"
+    "📋 Données voitures"
+)
+
+
+st.dataframe(
+    df,
+    use_container_width=True
 )
 
 
 
-fig,ax=plt.subplots()
-
-
-
-ax.scatter(
-
-    filtered["year"],
-
-    filtered["price"]
-
-)
-
-
-
-ax.set_xlabel(
-    "Année"
-)
-
-
-ax.set_ylabel(
-    "Prix FCFA"
-)
-
-
-
-st.pyplot(fig)
-
-
-
-
-
-st.divider()
-
-
-
-st.info(
-"""
-Variables analysées :
-
-✅ Marque  
-✅ Modèle  
-✅ Année  
-✅ Prix  
-✅ Kilométrage  
-✅ Type de boîte  
-✅ Région de vente  
-
-Conforme aux variables demandées dans le cahier des charges.
-"""
+st.success(
+    "Dashboard Cars opérationnel"
 )
