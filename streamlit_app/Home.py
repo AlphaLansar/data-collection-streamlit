@@ -1,12 +1,17 @@
 import streamlit as st
 
 
+
 st.set_page_config(
     page_title="Data Collection Platform",
-    page_icon="📊",
     layout="wide"
 )
 
+
+
+# =====================================================
+# HEADER
+# =====================================================
 
 
 st.title(
@@ -14,13 +19,15 @@ st.title(
 )
 
 
+
 st.write(
 """
-Application développée dans le cadre du projet d'examen
-Data Collection.
+Plateforme de collecte, traitement et analyse de données
+développée dans le cadre du projet Data Collection.
 
-Cette plateforme permet de collecter, nettoyer, stocker
-et analyser des données issues du Web scraping.
+L'objectif est de mettre en place une chaîne complète
+de traitement des données allant de l'extraction web
+jusqu'à la visualisation interactive.
 """
 )
 
@@ -30,7 +37,44 @@ st.divider()
 
 
 
-st.header("Architecture du projet")
+# =====================================================
+# OBJECTIFS
+# =====================================================
+
+
+st.header(
+    "Objectifs du projet"
+)
+
+
+
+st.markdown(
+"""
+Cette application permet de :
+
+- Collecter automatiquement des données web avec Selenium
+- Nettoyer et préparer les données avec Pandas
+- Stocker les données dans une base SQL SQLite
+- Explorer les résultats avec des dashboards interactifs
+- Exporter les données collectées
+- Evaluer l'expérience utilisateur via des formulaires dédiés
+"""
+)
+
+
+
+st.divider()
+
+
+
+# =====================================================
+# PIPELINE DATA
+# =====================================================
+
+
+st.header(
+    "Pipeline de traitement des données"
+)
 
 
 
@@ -40,62 +84,83 @@ col1, col2, col3, col4 = st.columns(4)
 
 with col1:
 
-    st.subheader("1. Collecte")
+    st.subheader(
+        "Collecte"
+    )
+
 
     st.write(
-    """
-    Extraction automatique des données
-    avec Selenium.
+"""
+Selenium WebDriver
 
-    Sources :
+Sources :
 
-    - Books To Scrape
-    - Gaaraas Cars
-    """
+- Books To Scrape
+- Gaaraas Cars
+"""
     )
 
 
 
 with col2:
 
-    st.subheader("2. Préparation")
+    st.subheader(
+        "Nettoyage"
+    )
+
 
     st.write(
-    """
-    Nettoyage et transformation
-    des données avec Pandas.
-    """
+"""
+Pandas
+
+Traitement :
+
+- valeurs manquantes
+- formats
+- doublons
+- transformation
+"""
     )
 
 
 
 with col3:
 
-    st.subheader("3. Stockage")
+    st.subheader(
+        "Stockage"
+    )
+
 
     st.write(
-    """
-    Base SQLite utilisant
-    SQLAlchemy.
+"""
+SQLite + SQLAlchemy
 
-    Tables :
+Tables :
 
-    - books
-    - cars
-    """
+- books
+- cars
+"""
     )
 
 
 
 with col4:
 
-    st.subheader("4. Analyse")
+    st.subheader(
+        "Analyse"
+    )
+
 
     st.write(
-    """
-    Dashboards interactifs,
-    statistiques et visualisations.
-    """
+"""
+Streamlit
+
+Fonctionnalités :
+
+- dashboards
+- filtres
+- export
+"""
     )
 
 
@@ -104,7 +169,14 @@ st.divider()
 
 
 
-st.header("Sources de données")
+# =====================================================
+# SOURCES
+# =====================================================
+
+
+st.header(
+    "Sources de données"
+)
 
 
 
@@ -114,41 +186,41 @@ col1, col2 = st.columns(2)
 
 with col1:
 
-    st.info(
-    """
-    Books To Scrape
+    st.markdown(
+"""
+### Books To Scrape
 
-    Variables principales :
+Données collectées :
 
-    - titre
-    - prix
-    - disponibilité
-    - note
-    - reviews
-    - catégorie
-    - description
-    - taxe
-    """
+- Titre
+- Prix
+- Disponibilité
+- Note
+- Nombre de reviews
+- Description
+- Catégorie
+- Taxe
+"""
     )
 
 
 
 with col2:
 
-    st.info(
-    """
-    Gaaraas Cars
+    st.markdown(
+"""
+### Gaaraas Cars
 
-    Variables principales :
+Données collectées :
 
-    - marque
-    - modèle
-    - année
-    - prix
-    - kilométrage
-    - transmission
-    - région
-    """
+- Marque
+- Modèle
+- Année
+- Prix
+- Kilométrage
+- Transmission
+- Région
+"""
     )
 
 
@@ -157,14 +229,28 @@ st.divider()
 
 
 
-st.header("Technologies")
+# =====================================================
+# TECHNOLOGIES
+# =====================================================
+
+
+st.header(
+    "Technologies utilisées"
+)
 
 
 
-st.write(
+st.code(
 """
-Python | Selenium | Pandas | SQLAlchemy |
-SQLite | Streamlit | Matplotlib
+Python
+Selenium WebDriver
+Pandas
+SQLAlchemy
+SQLite
+Streamlit
+Matplotlib
+Plotly
+Git/GitHub
 """
 )
 
@@ -174,10 +260,17 @@ st.divider()
 
 
 
+# =====================================================
+# AUTEUR
+# =====================================================
+
+
 st.caption(
 """
 Projet réalisé par Alpha Abdoulaye Lansar
 Master Intelligence Artificielle
-Data Collection Project - 2026
+
+Data Collection Project
+Web Scraping | Data Cleaning | Data Visualization | Deployment
 """
 )

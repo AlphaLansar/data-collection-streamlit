@@ -2,32 +2,31 @@ import streamlit as st
 import subprocess
 import pandas as pd
 import os
-import time
 
 
 
 st.set_page_config(
-    page_title="Selenium Scraping",
+    page_title="Web Scraping",
     layout="wide"
 )
 
 
 
 st.title(
-    "Selenium Web Scraping"
+    "Web Scraping Module"
 )
 
 
 
 st.write(
 """
-Module de collecte automatique des données
-depuis les sources web du projet.
+Cette interface permet de lancer la collecte automatique
+des données avec Selenium WebDriver.
 
-Technologie utilisée :
-- Selenium WebDriver
-- Python
-- Pandas
+Sources disponibles :
+
+- Books To Scrape
+- Gaaraas Cars
 """
 )
 
@@ -38,7 +37,7 @@ st.divider()
 
 
 # ===============================
-# PARAMETRES SCRAPING
+# CONFIGURATION
 # ===============================
 
 
@@ -48,30 +47,30 @@ st.header(
 
 
 
-col1, col2 = st.columns(2)
+source = st.selectbox(
+
+    "Choisir la source",
+
+    [
+        "Books To Scrape",
+        "Gaaraas Cars"
+    ]
+
+)
 
 
 
-with col1:
+pages = st.number_input(
 
-    source = st.selectbox(
-        "Source de données",
-        [
-            "Books To Scrape",
-            "Gaaraas Cars"
-        ]
-    )
+    "Nombre de pages à scraper",
 
+    min_value=1,
 
+    max_value=100,
 
-with col2:
+    value=5
 
-    pages = st.number_input(
-        "Nombre de pages à scraper",
-        min_value=1,
-        max_value=100,
-        value=5
-    )
+)
 
 
 
@@ -80,147 +79,161 @@ st.divider()
 
 
 # ===============================
-# LANCEMENT
+# LANCEMENT SCRAPING
 # ===============================
 
 
 if st.button(
-    "Lancer le scraping"
+    "Lancer la collecte"
 ):
 
 
-    progress = st.progress(0)
-
-
-    status = st.empty()
-
-
-
-    try:
+    with st.spinner(
+        "Collecte Selenium en cours..."
+    ):
 
 
         if source == "Books To Scrape":
 
 
             command = [
+
                 "python",
+
                 "scraper/books_scraper.py",
+
                 "--pages",
+
                 str(pages)
+
             ]
 
 
-            output_file = (
+            output = (
                 "data/raw/books.csv"
             )
+
 
 
         else:
 
 
             command = [
+
                 "python",
+
                 "scraper/cars_scraper.py",
+
                 "--pages",
+
                 str(pages)
+
             ]
 
 
-            output_file = (
+            output = (
                 "data/raw/cars.csv"
             )
 
 
 
-        status.info(
-            "Scraping en cours..."
-        )
+        try:
 
 
-        progress.progress(30)
+            result = subprocess.run(
 
+                command,
 
+                capture_output=True,
 
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            text=True
-        )
+                text=True
 
-
-
-        progress.progress(80)
-
-
-
-        if result.returncode == 0:
-
-
-            progress.progress(100)
-
-
-            st.success(
-                "Scraping terminé avec succès"
             )
 
 
 
-            st.subheader(
-                "Logs Selenium"
-            )
+            if result.returncode == 0:
 
 
-            st.code(
-                result.stdout
-            )
-
-
-
-            if os.path.exists(output_file):
-
-
-                df = pd.read_csv(
-                    output_file
+                st.success(
+                    "Scraping terminé avec succès"
                 )
 
 
-                st.metric(
-                    "Nombre de lignes collectées",
-                    len(df)
+                st.code(
+                    result.stdout
                 )
 
 
-                with st.expander(
-                    "Aperçu des données"
-                ):
+
+                if os.path.exists(output):
+
+
+                    df = pd.read_csv(output)
+
+
+                    st.subheader(
+                        "Résultat de la collecte"
+                    )
+
+
+                    col1,col2 = st.columns(2)
+
+
+                    with col1:
+
+                        st.metric(
+
+                            "Nombre de lignes",
+
+                            len(df)
+
+                        )
+
+
+
+                    with col2:
+
+                        st.metric(
+
+                            "Nombre de colonnes",
+
+                            len(df.columns)
+
+                        )
+
+
 
                     st.dataframe(
+
                         df.head(10),
+
                         use_container_width=True
+
                     )
 
 
 
-        else:
+            else:
+
+
+                st.error(
+                    "Erreur pendant le scraping"
+                )
+
+
+                st.code(
+                    result.stderr
+                )
+
+
+
+        except Exception as e:
 
 
             st.error(
-                "Erreur pendant le scraping"
+                f"Erreur système : {e}"
             )
-
-
-            st.code(
-                result.stderr
-            )
-
-
-
-    except Exception as e:
-
-
-        st.error(
-            str(e)
-        )
 
 
 
@@ -229,69 +242,62 @@ st.divider()
 
 
 # ===============================
-# INFORMATION
+# ETAT DES DONNEES
 # ===============================
 
 
 st.header(
-    "Sources disponibles"
+    "Etat des données disponibles"
 )
 
 
 
-col1,col2 = st.columns(2)
+files = [
 
+    (
+        "Books Raw Selenium",
+        "data/raw/books.csv"
+    ),
 
-
-with col1:
-
-
-    st.info(
-"""
-Books To Scrape
-
-Pagination :
-Toutes les pages du catalogue
-
-Variables :
-- titre
-- prix
-- disponibilité
-- rating
-- reviews
-- description
-- catégorie
-- tax
-"""
+    (
+        "Cars Raw Selenium",
+        "data/raw/cars.csv"
     )
 
+]
 
 
-with col2:
+
+for name,path in files:
 
 
-    st.info(
-"""
-Gaaraas Cars
+    if os.path.exists(path):
 
-Pagination :
-Pages des annonces Dakar Auto
 
-Variables :
-- marque
-- modèle
-- année
-- prix
-- kilométrage
-- transmission
-- région
-"""
-    )
+        df = pd.read_csv(path)
+
+
+        st.success(
+
+            f"{name} : {df.shape[0]} lignes disponibles"
+
+        )
+
+
+    else:
+
+
+        st.warning(
+
+            f"{name} : fichier absent"
+
+        )
 
 
 
 st.caption(
 """
-Data Collection Project - Selenium Scraping Module
+Collecte réalisée avec Selenium WebDriver
+Projet Data Collection - Alpha Abdoulaye Lansar
 """
 )
