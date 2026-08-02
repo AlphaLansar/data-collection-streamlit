@@ -1,192 +1,185 @@
-import os
 import pandas as pd
+import os
 
 
 INPUT_FILE = "data/raw/cars.csv"
-
 OUTPUT_FILE = "data/cleaned/cars_clean.csv"
 
 
-
-def clean_price(value):
-
-    if pd.isna(value):
-        return None
+print("==============================")
+print(" CLEANING CARS DATA ")
+print("==============================")
 
 
-    value = str(value)
+# Chargement
+df = pd.read_csv(INPUT_FILE)
 
 
-    value = (
-        value
-        .replace("CFA","")
-        .replace(" ","")
-        .strip()
-    )
-
-
-    try:
-
-        return int(value)
-
-    except:
-
-        return None
+print("Avant nettoyage:", df.shape)
 
 
 
+# ==========================
+# Colonnes examen professeur
+# ==========================
+
+columns = [
+    "url",
+    "title",
+    "brand",
+    "model",
+    "year",
+    "location",
+    "region",
+    "price",
+    "mileage",
+    "transmission"
+]
 
 
-def clean_year(value):
-
-    try:
-
-        return int(value)
-
-    except:
-
-        return None
-
-
-
-
-
-def clean_text(value):
-
-    if pd.isna(value):
-
-        return "Unknown"
-
-
-    value = str(value).strip()
-
-
-    if value == "":
-
-        return "Unknown"
-
-
-    return value
+df = df[
+    [c for c in columns if c in df.columns]
+]
 
 
 
+# ==========================
+# Nettoyage texte
+# ==========================
 
+for col in df.select_dtypes(include="object").columns:
 
-def main():
-
-
-    print("==============================")
-    print(" CLEANING CARS DATA ")
-    print("==============================")
-
-
-    df = pd.read_csv(
-        INPUT_FILE
-    )
-
-
-    print("Avant nettoyage:")
-    print(df.shape)
-
-
-
-    # suppression doublons
-
-    df = df.drop_duplicates()
-
-
-
-    # suppression colonnes inutiles
-
-    useless_columns = [
-
-        "fuel",
-        "engine",
-        "status"
-
-    ]
-
-
-    df = df.drop(
-        columns=useless_columns,
-        errors="ignore"
+    df[col] = (
+        df[col]
+        .fillna("Inconnu")
+        .astype(str)
+        .str.strip()
     )
 
 
 
-    # prix numérique
+# ==========================
+# Nettoyage prix
+# ==========================
 
-    df["price"] = df["price"].apply(
-        clean_price
+df["price"] = (
+    df["price"]
+    .astype(str)
+    .str.replace(
+        " ",
+        "",
+        regex=False
     )
+)
+
+
+df["price"] = pd.to_numeric(
+    df["price"],
+    errors="coerce"
+)
+
+
+df["price"] = df["price"].fillna(
+    df["price"].median()
+)
 
 
 
-    # année
+# ==========================
+# Nettoyage kilométrage
+# ==========================
 
-    df["year"] = df["year"].apply(
-        clean_year
+df["mileage"] = (
+    df["mileage"]
+    .astype(str)
+    .str.replace(
+        " ",
+        "",
+        regex=False
     )
+)
+
+
+df["mileage"] = pd.to_numeric(
+    df["mileage"],
+    errors="coerce"
+)
+
+
+df["mileage"] = df["mileage"].fillna(
+    df["mileage"].median()
+)
 
 
 
-    # textes
+# ==========================
+# Nettoyage année
+# ==========================
 
-    text_columns = [
-
-        "url",
-        "title",
-        "brand",
-        "model",
-        "location",
-        "region",
-        "transmission"
-
-    ]
+df["year"] = pd.to_numeric(
+    df["year"],
+    errors="coerce"
+)
 
 
+df["year"] = df["year"].fillna(
+    df["year"].median()
+)
 
-    for col in text_columns:
 
-        df[col] = df[col].apply(
-            clean_text
-        )
+df["year"] = df["year"].astype(int)
 
 
 
-    # création dossier
+# ==========================
+# Suppression doublons
+# ==========================
 
-    os.makedirs(
-        "data/cleaned",
-        exist_ok=True
-    )
-
-
-
-    df.to_csv(
-        OUTPUT_FILE,
-        index=False,
-        encoding="utf-8"
-    )
+df = df.drop_duplicates()
 
 
 
-    print("\nAprès nettoyage:")
-    print(df.shape)
+# ==========================
+# Sauvegarde
+# ==========================
+
+os.makedirs(
+    "data/cleaned",
+    exist_ok=True
+)
 
 
-    print("\nFichier créé:")
-    print(
-        OUTPUT_FILE
-    )
-
-
-    print("==============================")
+df.to_csv(
+    OUTPUT_FILE,
+    index=False
+)
 
 
 
+print("Après nettoyage:", df.shape)
+
+print()
+
+print("Colonnes finales:")
+print(df.columns.tolist())
 
 
-if __name__ == "__main__":
+print()
 
-    main()
+print("Valeurs manquantes:")
+print(df.isnull().sum())
+
+
+print()
+
+print("Statistiques prix:")
+print(df["price"].describe())
+
+
+print()
+
+print("Fichier créé:")
+print(OUTPUT_FILE)
+
+
+print("==============================")

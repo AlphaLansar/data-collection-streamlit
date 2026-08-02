@@ -9,43 +9,125 @@ st.set_page_config(
 )
 
 
-st.title("🚗 Cars Data Dashboard")
+st.title("🚗 Dashboard Analyse des voitures")
 
 
 FILE = "data/cleaned/cars_clean.csv"
 
 
 
-@st.cache_data
-def load_data():
+# ==========================
+# Chargement
+# ==========================
 
-    return pd.read_csv(FILE)
+try:
 
-
-
-df = load_data()
-
+    df = pd.read_csv(FILE)
 
 
-st.sidebar.header("Filtres")
+except Exception as e:
 
-
-
-if "brand" in df.columns:
-
-    brands = st.sidebar.multiselect(
-        "Marque",
-        df["brand"].dropna().unique(),
-        default=df["brand"].dropna().unique()
+    st.error(
+        f"Erreur chargement données : {e}"
     )
 
-    df = df[df["brand"].isin(brands)]
+    st.stop()
 
 
 
-if "year" in df.columns:
+st.success(
+    f"Données chargées : {len(df)} voitures"
+)
 
-    years = st.sidebar.slider(
+
+
+st.divider()
+
+
+
+# ==========================
+# Informations générales
+# ==========================
+
+
+st.header("📊 Informations générales")
+
+
+col1,col2,col3,col4 = st.columns(4)
+
+
+with col1:
+
+    st.metric(
+        "Nombre voitures",
+        len(df)
+    )
+
+
+with col2:
+
+    st.metric(
+        "Prix moyen",
+        f"{df['price'].mean():,.0f} FCFA"
+    )
+
+
+with col3:
+
+    st.metric(
+        "Marques",
+        df["brand"].nunique()
+    )
+
+
+with col4:
+
+    st.metric(
+        "Kilométrage moyen",
+        f"{df['mileage'].mean():,.0f}"
+    )
+
+
+
+st.divider()
+
+
+
+# ==========================
+# Filtres
+# ==========================
+
+
+st.header("🔎 Filtres")
+
+
+col1,col2,col3 = st.columns(3)
+
+
+
+with col1:
+
+    brands = st.multiselect(
+        "Marque",
+        df["brand"].unique(),
+        default=df["brand"].unique()
+    )
+
+
+
+with col2:
+
+    transmissions = st.multiselect(
+        "Transmission",
+        df["transmission"].unique(),
+        default=df["transmission"].unique()
+    )
+
+
+
+with col3:
+
+    years = st.slider(
         "Année",
         int(df["year"].min()),
         int(df["year"].max()),
@@ -55,50 +137,37 @@ if "year" in df.columns:
         )
     )
 
-    df = df[
-        (df["year"]>=years[0])
-        &
-        (df["year"]<=years[1])
-    ]
+
+
+filtered = df[
+
+    (df["brand"].isin(brands))
+
+    &
+
+    (df["transmission"].isin(transmissions))
+
+    &
+
+    (df["year"].between(
+        years[0],
+        years[1]
+    ))
+
+]
 
 
 
-
-st.subheader("📊 Informations générales")
-
-
-col1,col2,col3,col4 = st.columns(4)
-
-
-
-col1.metric(
-    "Nombre voitures",
-    len(df)
+st.write(
+    f"Résultat : {len(filtered)} voitures"
 )
 
 
-if "price" in df.columns:
 
-    col2.metric(
-        "Prix moyen",
-        round(df["price"].mean(),0)
-    )
-
-
-if "year" in df.columns:
-
-    col3.metric(
-        "Année moyenne",
-        round(df["year"].mean(),0)
-    )
-
-
-if "brand" in df.columns:
-
-    col4.metric(
-        "Marques",
-        df["brand"].nunique()
-    )
+st.dataframe(
+    filtered,
+    use_container_width=True
+)
 
 
 
@@ -106,28 +175,42 @@ st.divider()
 
 
 
-# Prix
+# ==========================
+# Graphiques
+# ==========================
 
-if "price" in df.columns:
 
-    st.subheader("💰 Distribution des prix")
+st.header("📈 Visualisations")
+
+
+
+col1,col2 = st.columns(2)
+
+
+
+with col1:
+
+    st.subheader(
+        "Distribution des prix"
+    )
 
 
     fig,ax = plt.subplots()
 
 
     ax.hist(
-        df["price"].dropna(),
-        bins=20
+        filtered["price"],
+        bins=15
     )
 
 
     ax.set_xlabel(
-        "Prix"
+        "Prix FCFA"
     )
 
+
     ax.set_ylabel(
-        "Nombre voitures"
+        "Nombre"
     )
 
 
@@ -135,55 +218,29 @@ if "price" in df.columns:
 
 
 
-
-# Marques
-
-if "brand" in df.columns:
-
-
-    st.subheader("🏷️ Marques populaires")
-
-
-    brands_count = (
-        df["brand"]
-        .value_counts()
-        .head(10)
-    )
-
-
-    st.bar_chart(
-        brands_count
-    )
-
-
-
-
-# Année prix
-
-if "year" in df.columns and "price" in df.columns:
-
+with col2:
 
     st.subheader(
-        "📈 Relation année / prix"
+        "Top marques"
     )
 
 
     fig,ax = plt.subplots()
 
 
-    ax.scatter(
-        df["year"],
-        df["price"]
+    filtered["brand"].value_counts().plot(
+        kind="bar",
+        ax=ax
     )
 
 
     ax.set_xlabel(
-        "Année"
+        "Marque"
     )
 
 
     ax.set_ylabel(
-        "Prix"
+        "Nombre"
     )
 
 
@@ -191,21 +248,70 @@ if "year" in df.columns and "price" in df.columns:
 
 
 
+col3,col4 = st.columns(2)
 
-# Tableau
 
-st.subheader(
-    "📋 Données voitures"
+
+with col3:
+
+    st.subheader(
+        "Kilométrage"
+    )
+
+
+    fig,ax = plt.subplots()
+
+
+    ax.hist(
+        filtered["mileage"],
+        bins=15
+    )
+
+
+    st.pyplot(fig)
+
+
+
+with col4:
+
+    st.subheader(
+        "Transmission"
+    )
+
+
+    fig,ax = plt.subplots()
+
+
+    filtered["transmission"].value_counts().plot(
+        kind="bar",
+        ax=ax
+    )
+
+
+    st.pyplot(fig)
+
+
+
+st.divider()
+
+
+
+# ==========================
+# Téléchargement
+# ==========================
+
+
+st.header("⬇️ Export données filtrées")
+
+
+csv = filtered.to_csv(
+    index=False
 )
 
 
-st.dataframe(
-    df,
-    use_container_width=True
-)
-
-
-
-st.success(
-    "Dashboard Cars opérationnel"
+st.download_button(
+    "Télécharger CSV",
+    csv,
+    "cars_filtered.csv",
+    "text/csv"
 )

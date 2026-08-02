@@ -10,14 +10,13 @@ st.set_page_config(
 )
 
 
-
-st.title("🕷️ Collecte des données - Web Scraping")
+st.title("🕷️ Module Web Scraping")
 
 
 st.write(
 """
-Cette interface permet de lancer les scripts Selenium
-de collecte des données depuis les sources étudiées.
+Cette interface permet de lancer la collecte automatique
+des données depuis les différentes sources.
 """
 )
 
@@ -27,34 +26,21 @@ st.divider()
 
 
 
-# ============================
-# CHOIX SOURCE
-# ============================
-
-
 source = st.selectbox(
-
-    "Choisir la source à scraper",
-
+    "Choisir la source",
     [
         "Books To Scrape",
         "Gaaraas Cars"
     ]
-
 )
 
 
 
 pages = st.number_input(
-
-    "Nombre de pages à scraper",
-
+    "Nombre de pages",
     min_value=1,
-
     max_value=100,
-
     value=5
-
 )
 
 
@@ -63,102 +49,112 @@ st.divider()
 
 
 
-if st.button("🚀 Lancer le scraping"):
+if st.button(
+    "🚀 Lancer scraping",
+    type="primary"
+):
+
+    with st.spinner(
+        "Scraping en cours..."
+    ):
 
 
-    with st.spinner("Scraping en cours..."):
+        if source == "Books To Scrape":
 
 
-        try:
+            scraper = [
+                "python",
+                "scraper/books_scraper.py",
+                "--pages",
+                str(pages)
+            ]
 
+            raw_file = "data/raw/books.csv"
 
-            if source == "Books To Scrape":
-
-
-                command = [
-
-                    "python",
-
-                    "scraper/books_scraper.py",
-
-                    "--pages",
-
-                    str(pages)
-
-                ]
-
-
-                output_file = "data/raw/books.csv"
-
-
-
-            else:
-
-
-                command = [
-
-                    "python",
-
-                    "scraper/cars_scraper.py",
-
-                    "--pages",
-
-                    str(pages)
-
-                ]
-
-
-                output_file = "data/raw/cars.csv"
+            clean = [
+                "python",
+                "cleaning/clean_books.py"
+            ]
 
 
 
-
-            result = subprocess.run(
-
-                command,
-
-                capture_output=True,
-
-                text=True
-
-            )
+        else:
 
 
-
-            if result.returncode == 0:
-
-
-                st.success(
-                    "Scraping terminé avec succès"
-                )
-
-
-                st.code(
-                    result.stdout
-                )
+            scraper = [
+                "python",
+                "scraper/cars_scraper.py",
+                "--pages",
+                str(pages)
+            ]
 
 
-            else:
+            raw_file = "data/raw/cars.csv"
 
 
-                st.error(
-                    "Erreur pendant le scraping"
-                )
-
-
-                st.code(
-                    result.stderr
-                )
+            clean = [
+                "python",
+                "cleaning/clean_cars.py"
+            ]
 
 
 
-        except Exception as e:
+        result = subprocess.run(
+            scraper,
+            capture_output=True,
+            text=True
+        )
 
+
+
+        if result.returncode != 0:
 
             st.error(
-                e
+                "Erreur scraping"
             )
 
+            st.code(
+                result.stderr
+            )
+
+            st.stop()
+
+
+
+        st.success(
+            "Scraping terminé"
+        )
+
+
+        st.code(
+            result.stdout
+        )
+
+
+
+        # nettoyage automatique
+
+
+        clean_result = subprocess.run(
+            clean,
+            capture_output=True,
+            text=True
+        )
+
+
+
+        if clean_result.returncode == 0:
+
+            st.success(
+                "Nettoyage terminé"
+            )
+
+
+        else:
+
+            st.warning(
+                "Nettoyage échoué"
+            )
 
 
 
@@ -166,59 +162,60 @@ st.divider()
 
 
 
-# ============================
-# APERCU RESULTATS
-# ============================
-
-
-st.header("📊 Aperçu des données collectées")
+st.header(
+    "📊 Données brutes"
+)
 
 
 
 if source == "Books To Scrape":
 
-
-    file="data/raw/books.csv"
-
+    file = "data/raw/books.csv"
 
 else:
 
-
-    file="data/raw/cars.csv"
-
-
+    file = "data/raw/cars.csv"
 
 
 
 if os.path.exists(file):
 
 
-    df=pd.read_csv(file)
+    df = pd.read_csv(file)
 
 
 
-    st.metric(
+    col1,col2 = st.columns(2)
 
-        "Nombre de lignes",
 
-        len(df)
 
-    )
+    with col1:
+
+        st.metric(
+            "Nombre lignes",
+            len(df)
+        )
+
+
+    with col2:
+
+        st.metric(
+            "Nombre colonnes",
+            len(df.columns)
+        )
 
 
 
     st.dataframe(
-
         df.head(20),
-
         use_container_width=True
-
     )
+
 
 
 else:
 
 
     st.info(
-        "Aucune donnée disponible. Lancez un scraping."
+        "Aucune donnée disponible"
     )

@@ -5,19 +5,115 @@ import os
 
 st.set_page_config(
     page_title="Download Data",
+    page_icon="⬇️",
     layout="wide"
 )
 
 
-st.title("⬇️ Téléchargement des données")
+st.title("⬇️ Download Data")
 
 
 st.write(
 """
-Cette page permet de télécharger les données collectées
-par scraping ainsi que les données nettoyées utilisées
-dans les dashboards.
+Cette page permet de télécharger les données utilisées dans le projet.
+
+Sources disponibles :
+
+- Données brutes issues du scraping Selenium
+- Données nettoyées utilisées pour les dashboards
+- Données brutes issues du scraping no-code Web Scraper
 """
+)
+
+
+st.divider()
+
+
+
+# =====================================================
+# FONCTION TELECHARGEMENT
+# =====================================================
+
+
+def download_section(title, file_path):
+
+
+    st.subheader(title)
+
+
+    if os.path.exists(file_path):
+
+
+        df = pd.read_csv(file_path)
+
+
+        st.success(
+            f"Données disponibles : {len(df)} lignes"
+        )
+
+
+        with st.expander("Voir aperçu"):
+
+            st.dataframe(
+                df.head(10),
+                use_container_width=True
+            )
+
+
+        with open(
+            file_path,
+            "rb"
+        ) as file:
+
+
+            st.download_button(
+
+                label="⬇️ Télécharger CSV",
+
+                data=file,
+
+                file_name=os.path.basename(file_path),
+
+                mime="text/csv"
+
+            )
+
+
+    else:
+
+
+        st.warning(
+            "Fichier non disponible pour le moment"
+        )
+
+
+
+# =====================================================
+# SELENIUM RAW DATA
+# =====================================================
+
+
+st.header(
+    "🕷️ Données brutes Selenium"
+)
+
+
+
+download_section(
+
+    "📚 Books Raw Selenium",
+
+    "data/raw/books.csv"
+
+)
+
+
+download_section(
+
+    "🚗 Cars Raw Selenium",
+
+    "data/raw/cars.csv"
+
 )
 
 
@@ -26,113 +122,34 @@ st.divider()
 
 
 
-# ============================
-# BOOKS
-# ============================
+# =====================================================
+# CLEAN DATA
+# =====================================================
 
 
-st.header("📚 Books To Scrape")
+st.header(
+    "🧹 Données nettoyées"
+)
 
 
-books_files = {
 
-    "Données brutes Books (Selenium)":
-    "data/raw/books.csv",
+download_section(
 
-    "Données nettoyées Books":
+    "📚 Books Clean Dataset",
+
     "data/cleaned/books_clean.csv"
 
-}
+)
 
 
 
-for name,path in books_files.items():
+download_section(
 
+    "🚗 Cars Clean Dataset",
 
-    if os.path.exists(path):
-
-        with open(
-            path,
-            "rb"
-        ) as file:
-
-
-            st.download_button(
-
-                label=f"⬇️ {name}",
-
-                data=file,
-
-                file_name=os.path.basename(path),
-
-                mime="text/csv"
-
-            )
-
-    else:
-
-        st.warning(
-            f"{path} introuvable"
-        )
-
-
-
-st.divider()
-
-
-
-# ============================
-# CARS
-# ============================
-
-
-st.header("🚗 Gaaraas Cars")
-
-
-
-cars_files = {
-
-
-    "Données brutes Cars (Selenium)":
-    "data/raw/cars.csv",
-
-
-    "Données nettoyées Cars":
     "data/cleaned/cars_clean.csv"
 
-}
-
-
-
-for name,path in cars_files.items():
-
-
-    if os.path.exists(path):
-
-        with open(
-            path,
-            "rb"
-        ) as file:
-
-
-            st.download_button(
-
-                label=f"⬇️ {name}",
-
-                data=file,
-
-                file_name=os.path.basename(path),
-
-                mime="text/csv"
-
-            )
-
-
-    else:
-
-        st.warning(
-            f"{path} introuvable"
-        )
+)
 
 
 
@@ -140,49 +157,60 @@ st.divider()
 
 
 
-# ============================
-# DATABASE
-# ============================
+# =====================================================
+# WEB SCRAPER NO CODE
+# =====================================================
 
 
-st.header("🗄️ Base de données SQL")
-
-
-
-database="books_cars.db"
-
-
-
-if os.path.exists(database):
-
-
-    with open(
-        database,
-        "rb"
-    ) as file:
-
-
-        st.download_button(
-
-            label="⬇️ Télécharger la base SQLite",
-
-            data=file,
-
-            file_name="books_cars.db",
-
-            mime="application/octet-stream"
-
-        )
-
-
-else:
-
-    st.warning(
-        "Base SQLite non trouvée"
-    )
+st.header(
+    "🌐 Web Scraper No-Code"
+)
 
 
 
-st.success(
-"Module téléchargement opérationnel"
+st.info(
+"""
+Les fichiers issus de l'extension Chrome Web Scraper
+seront ajoutés ici.
+
+Format attendu :
+
+data/nocode/
+
+    books_webscraper_raw.csv
+
+    cars_webscraper_raw.csv
+"""
+)
+
+
+
+download_section(
+
+    "📚 Books Web Scraper Raw",
+
+    "data/nocode/books_webscraper_raw.csv"
+
+)
+
+
+
+download_section(
+
+    "🚗 Cars Web Scraper Raw",
+
+    "data/nocode/cars_webscraper_raw.csv"
+
+)
+
+
+
+st.divider()
+
+
+
+st.caption(
+"""
+Projet Data Collection - Web Scraping, Cleaning and Streamlit Deployment
+"""
 )
