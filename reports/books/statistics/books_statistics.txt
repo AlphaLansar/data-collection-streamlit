@@ -1,0 +1,15 @@
+Nombre total livres : 20
+Prix moyen : 38.05
+Prix médian : 41.38
+Prix minimum : 13.99
+Prix maximum : 57.25
+
+Disponibilité:
+In stock: 20
+
+Ratings:
+1: 6
+5: 4
+4: 4
+3: 3
+2: 3
