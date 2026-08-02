@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import matplotlib.pyplot as plt
+import os
 
 
 st.set_page_config(
-    page_title="Cars Analytics",
+    page_title="Cars Analytics Dashboard",
     layout="wide"
 )
-
 
 
 st.title(
@@ -17,169 +17,243 @@ st.title(
 
 st.write(
 """
-Interactive exploration of the Gaaraas Cars dataset.
+Analyse interactive des annonces automobiles collectées
+depuis Gaaraas avec Selenium WebDriver.
 
-The dataset used in this dashboard comes from the Selenium
-scraping pipeline after cleaning and preprocessing.
+Pipeline :
+Scraping Selenium → Nettoyage Pandas → Analyse → Dashboard
 """
 )
 
 
+# =====================================================
+# CHEMIN DATASET
+# =====================================================
 
-FILE = "data/cleaned/cars_clean.csv"
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
 
+
+FILE = os.path.join(
+    BASE_DIR,
+    "data",
+    "cleaned",
+    "cars_clean.csv"
+)
+
+
+# =====================================================
+# CHARGEMENT
+# =====================================================
 
 
 @st.cache_data
 def load_data():
 
-    return pd.read_csv(FILE)
+    df = pd.read_csv(FILE)
+
+    return df
 
 
 
-try:
-
-    df = load_data()
+df = load_data()
 
 
-except Exception as e:
+
+# =====================================================
+# VERIFICATION DATASET
+# =====================================================
+
+
+required_columns = [
+    "brand",
+    "model",
+    "year",
+    "price",
+    "mileage",
+    "transmission",
+    "region"
+]
+
+
+missing = [
+    col for col in required_columns
+    if col not in df.columns
+]
+
+
+if missing:
 
     st.error(
-        f"Unable to load dataset: {e}"
+        "Mauvaises données chargées"
     )
+
+
+    st.write(
+        "Colonnes attendues :"
+    )
+
+
+    st.write(required_columns)
+
+
+    st.write(
+        "Colonnes trouvées :"
+    )
+
+
+    st.write(
+        df.columns.tolist()
+    )
+
 
     st.stop()
 
 
 
-# ==========================
-# FILTERS
-# ==========================
-
-
-st.sidebar.header(
-    "Dataset Filters"
+st.success(
+    f"Dataset chargé : {len(df)} véhicules"
 )
 
 
 
-search = st.sidebar.text_input(
-    "Search vehicle"
+# =====================================================
+# INDICATEURS
+# =====================================================
+
+
+st.header(
+    "Indicateurs principaux"
 )
 
 
 
-brands = st.sidebar.multiselect(
-    "Brand",
-    sorted(df["brand"].unique()),
-    default=sorted(df["brand"].unique())
-)
+col1,col2,col3,col4 = st.columns(4)
 
 
+with col1:
 
-transmissions = st.sidebar.multiselect(
-    "Transmission",
-    sorted(df["transmission"].unique()),
-    default=sorted(df["transmission"].unique())
-)
-
-
-
-regions = st.sidebar.multiselect(
-    "Region",
-    sorted(df["region"].unique()),
-    default=sorted(df["region"].unique())
-)
-
-
-
-year_range = st.sidebar.slider(
-    "Year range",
-    int(df.year.min()),
-    int(df.year.max()),
-    (
-        int(df.year.min()),
-        int(df.year.max())
+    st.metric(
+        "Nombre véhicules",
+        len(df)
     )
+
+
+with col2:
+
+    st.metric(
+        "Prix moyen",
+        f"{df['price'].mean():,.0f} FCFA"
+    )
+
+
+with col3:
+
+    st.metric(
+        "Marques",
+        df["brand"].nunique()
+    )
+
+
+with col4:
+
+    st.metric(
+        "Kilométrage moyen",
+        f"{df['mileage'].mean():,.0f}"
+    )
+
+
+
+st.divider()
+
+
+
+# =====================================================
+# FILTRES
+# =====================================================
+
+
+st.header(
+    "Filtres"
 )
+
+
+
+col1,col2,col3 = st.columns(3)
+
+
+
+with col1:
+
+    brands = st.multiselect(
+        "Marque",
+        sorted(df["brand"].unique()),
+        default=list(df["brand"].unique())
+    )
+
+
+
+with col2:
+
+    transmissions = st.multiselect(
+        "Transmission",
+        sorted(df["transmission"].unique()),
+        default=list(df["transmission"].unique())
+    )
+
+
+
+with col3:
+
+    years = st.slider(
+        "Année",
+        int(df["year"].min()),
+        int(df["year"].max()),
+        (
+            int(df["year"].min()),
+            int(df["year"].max())
+        )
+    )
 
 
 
 filtered = df[
-
     (df["brand"].isin(brands))
-
     &
-
     (df["transmission"].isin(transmissions))
-
     &
-
-    (df["region"].isin(regions))
-
-    &
-
     (df["year"].between(
-        year_range[0],
-        year_range[1]
+        years[0],
+        years[1]
     ))
-
 ]
 
 
 
-if search:
-
-    filtered = filtered[
-        filtered["title"]
-        .str.contains(
-            search,
-            case=False,
-            na=False
-        )
-    ]
+st.write(
+    f"Résultat : {len(filtered)} véhicules"
+)
 
 
 
-# ==========================
-# KPI
-# ==========================
+# =====================================================
+# TABLE
+# =====================================================
 
 
 st.header(
-    "Dataset Overview"
+    "Données filtrées"
 )
 
 
-
-c1,c2,c3,c4 = st.columns(4)
-
-
-
-c1.metric(
-    "Vehicles",
-    len(filtered)
-)
-
-
-
-c2.metric(
-    "Average price",
-    f"{filtered.price.mean():,.0f} FCFA"
-)
-
-
-
-c3.metric(
-    "Brands",
-    filtered.brand.nunique()
-)
-
-
-
-c4.metric(
-    "Average mileage",
-    f"{filtered.mileage.mean():,.0f} km"
+st.dataframe(
+    filtered,
+    use_container_width=True
 )
 
 
@@ -188,233 +262,175 @@ st.divider()
 
 
 
-# ==========================
-# PRICE ANALYSIS
-# ==========================
+# =====================================================
+# GRAPHIQUES
+# =====================================================
 
 
 st.header(
-    "Price Analysis"
+    "Visualisations"
 )
 
 
 
-fig_price = px.histogram(
-
-    filtered,
-
-    x="price",
-
-    nbins=20,
-
-    title="Vehicle price distribution"
-
-)
+col1,col2 = st.columns(2)
 
 
 
-st.plotly_chart(
-    fig_price,
-    use_container_width=True
-)
+with col1:
+
+    st.subheader(
+        "Distribution des prix"
+    )
+
+
+    fig,ax = plt.subplots()
+
+
+    ax.hist(
+        filtered["price"],
+        bins=15
+    )
+
+
+    ax.set_xlabel(
+        "Prix FCFA"
+    )
+
+
+    ax.set_ylabel(
+        "Nombre"
+    )
+
+
+    st.pyplot(fig)
 
 
 
-# ==========================
-# BRAND ANALYSIS
-# ==========================
+with col2:
+
+    st.subheader(
+        "Top marques"
+    )
+
+
+    brand_count = (
+        filtered["brand"]
+        .value_counts()
+    )
+
+
+    fig,ax = plt.subplots()
+
+
+    ax.bar(
+        brand_count.index,
+        brand_count.values
+    )
+
+
+    ax.set_xlabel(
+        "Marque"
+    )
+
+
+    ax.set_ylabel(
+        "Nombre"
+    )
+
+
+    plt.xticks(
+        rotation=45
+    )
+
+
+    st.pyplot(fig)
+
+
+
+col3,col4 = st.columns(2)
+
+
+
+with col3:
+
+    st.subheader(
+        "Kilométrage"
+    )
+
+
+    fig,ax = plt.subplots()
+
+
+    ax.hist(
+        filtered["mileage"],
+        bins=15
+    )
+
+
+    st.pyplot(fig)
+
+
+
+with col4:
+
+    st.subheader(
+        "Transmission"
+    )
+
+
+    transmission = (
+        filtered["transmission"]
+        .value_counts()
+    )
+
+
+    fig,ax = plt.subplots()
+
+
+    ax.bar(
+        transmission.index,
+        transmission.values
+    )
+
+
+    st.pyplot(fig)
+
+
+
+st.divider()
+
+
+
+# =====================================================
+# EXPORT
+# =====================================================
 
 
 st.header(
-    "Brand Analysis"
+    "Export"
 )
 
-
-
-brand_df = (
-    filtered["brand"]
-    .value_counts()
-    .reset_index()
-)
-
-
-
-brand_df.columns = [
-    "brand",
-    "count"
-]
-
-
-
-fig_brand = px.bar(
-
-    brand_df,
-
-    x="brand",
-
-    y="count",
-
-    title="Number of vehicles by brand"
-
-)
-
-
-
-st.plotly_chart(
-    fig_brand,
-    use_container_width=True
-)
-
-
-
-# ==========================
-# YEAR / PRICE
-# ==========================
-
-
-st.header(
-    "Price evolution according to year"
-)
-
-
-
-fig_year = px.scatter(
-
-    filtered,
-
-    x="year",
-
-    y="price",
-
-    size="mileage",
-
-    color="brand",
-
-    hover_data=[
-        "model",
-        "transmission"
-    ],
-
-    title="Vehicle price vs year"
-
-)
-
-
-
-st.plotly_chart(
-    fig_year,
-    use_container_width=True
-)
-
-
-
-# ==========================
-# TRANSMISSION
-# ==========================
-
-
-st.header(
-    "Transmission Analysis"
-)
-
-
-
-trans_df = (
-    filtered["transmission"]
-    .value_counts()
-    .reset_index()
-)
-
-
-
-trans_df.columns = [
-    "transmission",
-    "count"
-]
-
-
-
-fig_trans = px.pie(
-
-    trans_df,
-
-    names="transmission",
-
-    values="count",
-
-    title="Transmission distribution"
-
-)
-
-
-
-st.plotly_chart(
-    fig_trans,
-    use_container_width=True
-)
-
-
-
-# ==========================
-# TABLE
-# ==========================
-
-
-st.header(
-    "Vehicle Details"
-)
-
-
-
-st.dataframe(
-
-    filtered[
-        [
-            "brand",
-            "model",
-            "year",
-            "price",
-            "mileage",
-            "transmission",
-            "region"
-        ]
-    ],
-
-    use_container_width=True
-
-)
-
-
-
-# ==========================
-# DOWNLOAD
-# ==========================
 
 
 csv = filtered.to_csv(
     index=False
-).encode(
-    "utf-8"
 )
 
 
-
 st.download_button(
-
-    label="Download filtered dataset",
-
-    data=csv,
-
-    file_name="cars_filtered.csv",
-
-    mime="text/csv"
-
+    "Télécharger CSV",
+    csv,
+    "cars_filtered.csv",
+    "text/csv"
 )
 
 
 
 st.caption(
 """
-Alpha DataLab - Cars Analytics Module
+Projet Data Collection
+Alpha Abdoulaye Lansar
+Selenium | Pandas | SQL | Streamlit
 """
 )
