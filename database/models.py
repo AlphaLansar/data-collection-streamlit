@@ -4,9 +4,9 @@ from .database import Base
 
 
 
-# ==========================
+# =====================================
 # TABLE BOOKS
-# ==========================
+# =====================================
 
 class Book(Base):
 
@@ -36,18 +36,13 @@ class Book(Base):
     )
 
 
+    products_count = Column(
+        Integer
+    )
+
+
     rating = Column(
-        String
-    )
-
-
-    image = Column(
-        String
-    )
-
-
-    url = Column(
-        String
+        Integer
     )
 
 
@@ -56,11 +51,27 @@ class Book(Base):
     )
 
 
+    product_type = Column(
+        String
+    )
 
 
-# ==========================
+    reviews = Column(
+        Integer
+    )
+
+
+    tax = Column(
+        Float
+    )
+
+
+
+
+
+# =====================================
 # TABLE CARS
-# ==========================
+# =====================================
 
 class Car(Base):
 
@@ -110,12 +121,12 @@ class Car(Base):
 
 
     price = Column(
-        Integer
+        Float
     )
 
 
     mileage = Column(
-        Integer
+        Float
     )
 
 

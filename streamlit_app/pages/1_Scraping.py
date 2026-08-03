@@ -1,32 +1,39 @@
 import streamlit as st
-import subprocess
 import pandas as pd
 import os
 
 
-
 st.set_page_config(
-    page_title="Web Scraping",
+    page_title="Scraping Pipeline",
     layout="wide"
 )
 
 
 
 st.title(
-    "Web Scraping Module"
+    "Web Scraping Pipeline"
 )
 
 
 
-st.write(
+st.markdown(
 """
-Cette interface permet de lancer la collecte automatique
-des données avec Selenium WebDriver.
+## Phase 1 — Collecte des données
 
-Sources disponibles :
+Cette interface présente la première étape du projet :
+
+**Web Scraping automatique avec Selenium WebDriver**
+
+Sources utilisées :
 
 - Books To Scrape
-- Gaaraas Cars
+- Gaaraas Dakar Cars
+
+Technologies :
+
+- Python
+- Selenium
+- Pandas
 """
 )
 
@@ -36,203 +43,105 @@ st.divider()
 
 
 
-# ===============================
-# CONFIGURATION
-# ===============================
+# =====================================================
+# PATH
+# =====================================================
+
+
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
+
+
+
+files = {
+
+
+"Books Raw Dataset":
+"data/raw/books.csv",
+
+
+"Cars Raw Dataset":
+"data/raw/cars.csv",
+
+
+"Books Clean Dataset":
+"data/cleaned/books_clean.csv",
+
+
+"Cars Clean Dataset":
+"data/cleaned/cars_clean.csv"
+
+}
+
+
+
+# =====================================================
+# DATASET STATUS
+# =====================================================
 
 
 st.header(
-    "Configuration du scraping"
+"Etat des datasets"
 )
 
 
 
-source = st.selectbox(
-
-    "Choisir la source",
-
-    [
-        "Books To Scrape",
-        "Gaaraas Cars"
-    ]
-
-)
+cols = st.columns(4)
 
 
 
-pages = st.number_input(
-
-    "Nombre de pages à scraper",
-
-    min_value=1,
-
-    max_value=100,
-
-    value=5
-
-)
+datasets = {}
 
 
 
-st.divider()
+for col,(name,path) in zip(cols,files.items()):
 
 
-
-# ===============================
-# LANCEMENT SCRAPING
-# ===============================
-
-
-if st.button(
-    "Lancer la collecte"
-):
+    file_path = os.path.join(
+        BASE_DIR,
+        path
+    )
 
 
-    with st.spinner(
-        "Collecte Selenium en cours..."
-    ):
+    with col:
 
 
-        if source == "Books To Scrape":
+        if os.path.exists(file_path):
 
 
-            command = [
-
-                "python",
-
-                "scraper/books_scraper.py",
-
-                "--pages",
-
-                str(pages)
-
-            ]
-
-
-            output = (
-                "data/raw/books.csv"
+            df = pd.read_csv(
+                file_path
             )
 
+
+            datasets[name] = df
+
+
+            st.success(
+                "Disponible"
+            )
+
+
+            st.metric(
+                "Nombre lignes",
+                len(df)
+            )
+
+
+            st.caption(
+                f"{df.shape[1]} colonnes"
+            )
 
 
         else:
 
-
-            command = [
-
-                "python",
-
-                "scraper/cars_scraper.py",
-
-                "--pages",
-
-                str(pages)
-
-            ]
-
-
-            output = (
-                "data/raw/cars.csv"
-            )
-
-
-
-        try:
-
-
-            result = subprocess.run(
-
-                command,
-
-                capture_output=True,
-
-                text=True
-
-            )
-
-
-
-            if result.returncode == 0:
-
-
-                st.success(
-                    "Scraping terminé avec succès"
-                )
-
-
-                st.code(
-                    result.stdout
-                )
-
-
-
-                if os.path.exists(output):
-
-
-                    df = pd.read_csv(output)
-
-
-                    st.subheader(
-                        "Résultat de la collecte"
-                    )
-
-
-                    col1,col2 = st.columns(2)
-
-
-                    with col1:
-
-                        st.metric(
-
-                            "Nombre de lignes",
-
-                            len(df)
-
-                        )
-
-
-
-                    with col2:
-
-                        st.metric(
-
-                            "Nombre de colonnes",
-
-                            len(df.columns)
-
-                        )
-
-
-
-                    st.dataframe(
-
-                        df.head(10),
-
-                        use_container_width=True
-
-                    )
-
-
-
-            else:
-
-
-                st.error(
-                    "Erreur pendant le scraping"
-                )
-
-
-                st.code(
-                    result.stderr
-                )
-
-
-
-        except Exception as e:
-
-
             st.error(
-                f"Erreur système : {e}"
+                "Absent"
             )
 
 
@@ -241,63 +150,142 @@ st.divider()
 
 
 
-# ===============================
-# ETAT DES DONNEES
-# ===============================
+# =====================================================
+# DETAILS DATASET
+# =====================================================
 
 
 st.header(
-    "Etat des données disponibles"
+"Détails des données collectées"
 )
 
 
 
-files = [
+dataset_choice = st.selectbox(
+    "Choisir un dataset",
+    list(datasets.keys())
+)
 
-    (
-        "Books Raw Selenium",
-        "data/raw/books.csv"
-    ),
 
-    (
-        "Cars Raw Selenium",
-        "data/raw/cars.csv"
+
+selected = datasets[dataset_choice]
+
+
+
+col1,col2,col3 = st.columns(3)
+
+
+
+with col1:
+
+    st.metric(
+        "Lignes",
+        selected.shape[0]
     )
 
-]
+
+
+with col2:
+
+    st.metric(
+        "Colonnes",
+        selected.shape[1]
+    )
 
 
 
-for name,path in files:
+with col3:
 
-
-    if os.path.exists(path):
-
-
-        df = pd.read_csv(path)
-
-
-        st.success(
-
-            f"{name} : {df.shape[0]} lignes disponibles"
-
-        )
-
-
-    else:
-
-
-        st.warning(
-
-            f"{name} : fichier absent"
-
-        )
+    st.metric(
+        "Valeurs manquantes",
+        selected.isnull().sum().sum()
+    )
 
 
 
-st.caption(
+st.subheader(
+"Aperçu"
+)
+
+
+st.dataframe(
+    selected.head(10),
+    use_container_width=True
+)
+
+
+
+st.subheader(
+"Colonnes disponibles"
+)
+
+
+st.write(
+selected.columns.tolist()
+)
+
+
+
+st.divider()
+
+
+
+# =====================================================
+# ARCHITECTURE
+# =====================================================
+
+
+st.header(
+"Architecture du pipeline"
+)
+
+
+
+st.code(
 """
-Collecte réalisée avec Selenium WebDriver
-Projet Data Collection - Alpha Abdoulaye Lansar
+                Selenium WebDriver
+
+                       |
+                       v
+
+              Raw CSV Dataset
+
+                       |
+                       v
+
+              Data Cleaning Pandas
+
+                       |
+                       v
+
+             Clean CSV Dataset
+
+                       |
+                       v
+
+              SQLite Database
+
+                       |
+                       v
+
+          Streamlit Analytics Dashboard
+"""
+)
+
+
+
+st.divider()
+
+
+
+st.success(
+"""
+Pipeline Data Collection opérationnel :
+
+Scraping
+→ Cleaning
+→ Database
+→ Analytics
+→ Visualization
 """
 )

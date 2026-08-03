@@ -5,25 +5,29 @@ import os
 
 
 st.set_page_config(
-    page_title="Books Analytics Dashboard",
+    page_title="Books Analytics",
     layout="wide"
 )
 
 
-st.title(
-    "Books Analytics Dashboard"
-)
+# ==========================
+# TITRE
+# ==========================
+
+st.title("Books Analytics Dashboard")
 
 
-st.write(
+st.markdown(
 """
-Analyse interactive des livres collectés
-depuis Books to Scrape.
+Analyse interactive du catalogue Books To Scrape.
 
 Pipeline :
-Scraping Selenium → Cleaning Pandas → Analyse → Dashboard
+Web Scraping Selenium → Nettoyage Pandas → Analyse → Visualisation
 """
 )
+
+
+st.divider()
 
 
 
@@ -60,16 +64,29 @@ df = load_data()
 
 
 
+if df.empty:
+
+    st.error(
+        "Dataset vide"
+    )
+
+    st.stop()
+
+
+
 st.success(
-    f"Dataset chargé : {len(df)} livres"
+    f"{len(df)} livres chargés depuis le dataset nettoyé"
 )
 
 
 
-# ==========================
-# INDICATEURS
-# ==========================
+st.divider()
 
+
+
+# ==========================
+# KPI
+# ==========================
 
 st.header(
     "Indicateurs principaux"
@@ -84,7 +101,7 @@ c1,c2,c3,c4 = st.columns(4)
 with c1:
 
     st.metric(
-        "Nombre livres",
+        "Nombre de livres",
         len(df)
     )
 
@@ -103,10 +120,7 @@ with c3:
 
     st.metric(
         "Note moyenne",
-        round(
-            df["rating"].mean(),
-            2
-        )
+        f"{df['rating'].mean():.2f}/5"
     )
 
 
@@ -114,7 +128,7 @@ with c3:
 with c4:
 
     st.metric(
-        "Types de livres",
+        "Catégories",
         df["product_type"].nunique()
     )
 
@@ -125,16 +139,69 @@ st.divider()
 
 
 # ==========================
-# TABLE
+# FILTRES
 # ==========================
 
 st.header(
-    "Données livres"
+    "Filtres interactifs"
+)
+
+
+
+col1,col2 = st.columns(2)
+
+
+
+with col1:
+
+    ratings = st.multiselect(
+        "Sélectionner les notes",
+        sorted(df["rating"].unique()),
+        default=list(df["rating"].unique())
+    )
+
+
+
+with col2:
+
+    availability = st.multiselect(
+        "Disponibilité",
+        sorted(df["availability"].unique()),
+        default=list(df["availability"].unique())
+    )
+
+
+
+filtered = df[
+    (df["rating"].isin(ratings))
+    &
+    (df["availability"].isin(availability))
+]
+
+
+
+st.write(
+    f"Résultat : {len(filtered)} livres"
+)
+
+
+
+st.divider()
+
+
+
+# ==========================
+# TABLEAU
+# ==========================
+
+
+st.header(
+    "Données filtrées"
 )
 
 
 st.dataframe(
-    df,
+    filtered,
     use_container_width=True
 )
 
@@ -150,7 +217,7 @@ st.divider()
 
 
 st.header(
-    "Visualisations"
+    "Analyses graphiques"
 )
 
 
@@ -159,7 +226,10 @@ col1,col2 = st.columns(2)
 
 
 
+# Prix
+
 with col1:
+
 
     st.subheader(
         "Distribution des prix"
@@ -170,7 +240,7 @@ with col1:
 
 
     ax.hist(
-        df["price"],
+        filtered["price"],
         bins=20
     )
 
@@ -189,6 +259,9 @@ with col1:
 
 
 
+
+# Rating
+
 with col2:
 
 
@@ -198,7 +271,7 @@ with col2:
 
 
     rating_count = (
-        df["rating"]
+        filtered["rating"]
         .value_counts()
         .sort_index()
     )
@@ -208,7 +281,7 @@ with col2:
 
 
     ax.bar(
-        rating_count.index,
+        rating_count.index.astype(str),
         rating_count.values
     )
 
@@ -224,3 +297,38 @@ with col2:
 
 
     st.pyplot(fig)
+
+
+
+
+st.divider()
+
+
+
+# ==========================
+# TOP PRODUITS
+# ==========================
+
+
+st.header(
+    "Livres les plus chers"
+)
+
+
+
+top_books = (
+    filtered
+    .sort_values(
+        "price",
+        ascending=False
+    )
+    [["title","price"]]
+    .head(10)
+)
+
+
+
+st.dataframe(
+    top_books,
+    use_container_width=True
+)

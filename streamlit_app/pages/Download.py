@@ -1,27 +1,31 @@
 import streamlit as st
 import pandas as pd
+import sqlite3
 import os
 
 
 st.set_page_config(
-    page_title="Download Data",
-    page_icon="⬇️",
+    page_title="Data Export Center",
     layout="wide"
 )
 
 
-st.title("⬇️ Download Data")
+st.title("Data Export Center")
 
 
-st.write(
+st.markdown(
 """
-Cette page permet de télécharger les données utilisées dans le projet.
+Centre d'exportation des données du projet.
 
-Sources disponibles :
+Pipeline :
 
-- Données brutes issues du scraping Selenium
-- Données nettoyées utilisées pour les dashboards
-- Données brutes issues du scraping no-code Web Scraper
+Scraping
+↓
+Cleaning
+↓
+SQLite Database
+↓
+Export des données
 """
 )
 
@@ -31,90 +35,217 @@ st.divider()
 
 
 # =====================================================
-# FONCTION TELECHARGEMENT
+# PATHS
 # =====================================================
 
 
-def download_section(title, file_path):
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
 
 
-    st.subheader(title)
+
+BOOKS_FILE = os.path.join(
+    BASE_DIR,
+    "data",
+    "cleaned",
+    "books_clean.csv"
+)
 
 
-    if os.path.exists(file_path):
+CARS_FILE = os.path.join(
+    BASE_DIR,
+    "data",
+    "cleaned",
+    "cars_clean.csv"
+)
 
 
-        df = pd.read_csv(file_path)
+
+DB_FILE = os.path.join(
+    BASE_DIR,
+    "books_cars.db"
+)
 
 
-        st.success(
-            f"Données disponibles : {len(df)} lignes"
+
+# =====================================================
+# LOAD DATA
+# =====================================================
+
+
+@st.cache_data
+def load_books():
+
+    return pd.read_csv(
+        BOOKS_FILE
+    )
+
+
+@st.cache_data
+def load_cars():
+
+    return pd.read_csv(
+        CARS_FILE
+    )
+
+
+
+books = load_books()
+
+cars = load_cars()
+
+
+
+# =====================================================
+# STATISTICS
+# =====================================================
+
+
+st.header(
+    "Données disponibles"
+)
+
+
+
+col1,col2,col3 = st.columns(3)
+
+
+
+with col1:
+
+    st.metric(
+        "Livres nettoyés",
+        len(books)
+    )
+
+
+
+with col2:
+
+    st.metric(
+        "Voitures nettoyées",
+        len(cars)
+    )
+
+
+
+with col3:
+
+    st.metric(
+        "Base SQLite",
+        "Disponible"
+    )
+
+
+
+st.divider()
+
+
+
+# =====================================================
+# CSV EXPORT
+# =====================================================
+
+
+st.header(
+    "Export CSV"
+)
+
+
+
+col1,col2 = st.columns(2)
+
+
+
+with col1:
+
+    st.subheader(
+        "Books Dataset"
+    )
+
+
+    csv_books = books.to_csv(
+        index=False
+    )
+
+
+    st.download_button(
+        label="Télécharger books_clean.csv",
+        data=csv_books,
+        file_name="books_clean.csv",
+        mime="text/csv"
+    )
+
+
+
+with col2:
+
+    st.subheader(
+        "Cars Dataset"
+    )
+
+
+    csv_cars = cars.to_csv(
+        index=False
+    )
+
+
+    st.download_button(
+        label="Télécharger cars_clean.csv",
+        data=csv_cars,
+        file_name="cars_clean.csv",
+        mime="text/csv"
+    )
+
+
+
+st.divider()
+
+
+
+# =====================================================
+# SQLITE EXPORT
+# =====================================================
+
+
+st.header(
+    "Export Base de données SQLite"
+)
+
+
+
+if os.path.exists(DB_FILE):
+
+
+    with open(
+        DB_FILE,
+        "rb"
+    ) as file:
+
+
+        st.download_button(
+            label="Télécharger books_cars.db",
+            data=file,
+            file_name="books_cars.db",
+            mime="application/octet-stream"
         )
 
 
-        with st.expander("Voir aperçu"):
-
-            st.dataframe(
-                df.head(10),
-                use_container_width=True
-            )
+    st.success(
+        "Base SQLite prête pour export"
+    )
 
 
-        with open(
-            file_path,
-            "rb"
-        ) as file:
+else:
 
-
-            st.download_button(
-
-                label="⬇️ Télécharger CSV",
-
-                data=file,
-
-                file_name=os.path.basename(file_path),
-
-                mime="text/csv"
-
-            )
-
-
-    else:
-
-
-        st.warning(
-            "Fichier non disponible pour le moment"
-        )
-
-
-
-# =====================================================
-# SELENIUM RAW DATA
-# =====================================================
-
-
-st.header(
-    "🕷️ Données brutes Selenium"
-)
-
-
-
-download_section(
-
-    "📚 Books Raw Selenium",
-
-    "data/raw/books.csv"
-
-)
-
-
-download_section(
-
-    "🚗 Cars Raw Selenium",
-
-    "data/raw/cars.csv"
-
-)
+    st.error(
+        "Base SQLite introuvable"
+    )
 
 
 
@@ -123,94 +254,75 @@ st.divider()
 
 
 # =====================================================
-# CLEAN DATA
+# DATABASE PREVIEW
 # =====================================================
 
 
 st.header(
-    "🧹 Données nettoyées"
+    "Aperçu des tables SQL"
 )
 
 
 
-download_section(
-
-    "📚 Books Clean Dataset",
-
-    "data/cleaned/books_clean.csv"
-
+conn = sqlite3.connect(
+    DB_FILE
 )
 
 
 
-download_section(
-
-    "🚗 Cars Clean Dataset",
-
-    "data/cleaned/cars_clean.csv"
-
-)
-
-
-
-st.divider()
-
-
-
-# =====================================================
-# WEB SCRAPER NO CODE
-# =====================================================
-
-
-st.header(
-    "🌐 Web Scraper No-Code"
-)
-
-
-
-st.info(
+tables = pd.read_sql(
 """
-Les fichiers issus de l'extension Chrome Web Scraper
-seront ajoutés ici.
+SELECT name
+FROM sqlite_master
+WHERE type='table';
+""",
+conn
+)
 
-Format attendu :
 
-data/nocode/
 
-    books_webscraper_raw.csv
+st.dataframe(
+    tables,
+    use_container_width=True
+)
 
-    cars_webscraper_raw.csv
+
+
+table = st.selectbox(
+    "Prévisualiser une table",
+    tables["name"]
+)
+
+
+
+preview = pd.read_sql(
+f"""
+SELECT *
+FROM {table}
+LIMIT 10
+""",
+conn
+)
+
+
+
+st.dataframe(
+preview,
+use_container_width=True
+)
+
+
+
+conn.close()
+
+
+
+st.success(
 """
-)
+Module Export validé :
 
-
-
-download_section(
-
-    "📚 Books Web Scraper Raw",
-
-    "data/nocode/books_webscraper_raw.csv"
-
-)
-
-
-
-download_section(
-
-    "🚗 Cars Web Scraper Raw",
-
-    "data/nocode/cars_webscraper_raw.csv"
-
-)
-
-
-
-st.divider()
-
-
-
-st.caption(
-"""
-Projet Data Collection - Web Scraping, Cleaning and Streamlit Deployment
+CSV Cleaning Export
++
+SQLite Database Export
 """
 )

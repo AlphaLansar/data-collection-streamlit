@@ -1,4 +1,17 @@
+import os
+import sys
 import pandas as pd
+
+
+# Ajouter la racine du projet au PATH Python
+ROOT_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__)
+    )
+)
+
+sys.path.append(ROOT_DIR)
+
 
 from database.database import SessionLocal, engine, Base
 from database.models import Book
@@ -7,85 +20,85 @@ from database.models import Book
 CSV_FILE = "data/cleaned/books_clean.csv"
 
 
-
-def import_books():
-
-    print("==============================")
-    print(" IMPORT BOOKS DATABASE ")
-    print("==============================")
+print("==============================")
+print(" IMPORT BOOKS INTO SQLITE ")
+print("==============================")
 
 
-    Base.metadata.create_all(
-        bind=engine
-    )
+# Création tables
+Base.metadata.create_all(
+    bind=engine
+)
 
 
-    df = pd.read_csv(
-        CSV_FILE
-    )
+# Chargement CSV
+
+df = pd.read_csv(
+    CSV_FILE
+)
 
 
-    db = SessionLocal()
+print(
+    "Livres à importer:",
+    len(df)
+)
 
 
-    try:
-
-        count = 0
+db = SessionLocal()
 
 
-        for _, row in df.iterrows():
+try:
+
+    # éviter doublons
+    db.query(Book).delete()
 
 
-            book = Book(
+    for _, row in df.iterrows():
 
-                title=row.get("title"),
+        book = Book(
 
-                price=row.get("price"),
+            title=row["title"],
 
-                availability=row.get("availability"),
+            price=float(
+                row["price"]
+            ),
 
-                rating=row.get("rating"),
+            availability=row["availability"],
 
-                image=row.get("image"),
+            rating=str(
+                row["rating"]
+            ),
 
-                description=row.get("description")
+            description=row["description"]
 
-            )
-
-
-            db.add(book)
-
-            count += 1
-
-
-
-        db.commit()
-
-
-        print(
-            "Nombre livres importés:",
-            count
         )
 
 
-
-    except Exception as e:
-
-
-        db.rollback()
-
-        print(
-            "ERREUR:",
-            e
-        )
+        db.add(book)
 
 
-    finally:
-
-        db.close()
+    db.commit()
 
 
+    print("==============================")
+    print("IMPORT TERMINE")
+    print(
+        "Nombre livres:",
+        len(df)
+    )
+    print("==============================")
 
-if __name__ == "__main__":
 
-    import_books()
+except Exception as e:
+
+    db.rollback()
+
+    print(
+        "Erreur:",
+        e
+    )
+
+
+finally:
+
+    db.close()
