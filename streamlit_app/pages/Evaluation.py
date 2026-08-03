@@ -1,130 +1,126 @@
 import streamlit as st
 
+
 st.set_page_config(
     page_title="Application Evaluation",
     layout="wide"
 )
 
-# =====================================================
-# MODIFIER CES DEUX LIENS
-# =====================================================
 
-GOOGLE_FORM_URL = "https://forms.gle/TON_LIEN_ICI"
 
-KOBO_FORM_URL = "https://ee.kobotoolbox.org/x/TON_LIEN_ICI"
+st.title(
+    "Application Evaluation"
+)
 
-# =====================================================
-# HEADER
-# =====================================================
 
-st.title("Application Evaluation")
 
 st.write(
 """
-Votre retour est important pour évaluer la qualité de cette application.
+Cette section permet d'évaluer l'expérience utilisateur
+de la plateforme Data Collection.
 
-Deux versions du questionnaire sont disponibles conformément
-aux exigences du projet :
-
-• Google Forms
-
-• KoboToolbox
+Deux formulaires sont disponibles :
+- Google Forms
+- KoboToolbox
 """
 )
 
+
+
 st.divider()
 
-# =====================================================
-# OBJECTIF
-# =====================================================
 
-st.header("Objectif de l'évaluation")
 
-st.write(
-"""
-Le questionnaire permet d'évaluer :
-
-- la qualité de l'interface
-
-- la facilité d'utilisation
-
-- les fonctionnalités proposées
-
-- les performances générales
-
-- la satisfaction globale
-
-- les pistes d'amélioration
-"""
+st.header(
+    "Formulaires d'évaluation"
 )
 
-st.divider()
 
-# =====================================================
-# FORMULAIRES
-# =====================================================
 
 col1, col2 = st.columns(2)
 
+
+
 with col1:
 
-    st.subheader("Google Forms")
+    st.subheader(
+        "Google Forms"
+    )
+
 
     st.write(
-"""
-Version destinée aux utilisateurs souhaitant répondre
-au questionnaire via Google Forms.
-"""
+    """
+    Formulaire Google Forms pour recueillir
+    les retours des utilisateurs.
+    """
     )
 
-    st.link_button(
-        "Accéder au formulaire Google Forms",
-        GOOGLE_FORM_URL,
-        use_container_width=True
+
+    google_url = (
+        "https://docs.google.com/forms/d/e/"
+        "1FAIpQLSd8dvtFMb5g0aOYOZJt592TYf6_tej7HMSJuaTEC5BOAYA2Ug/"
+        "viewform?usp=dialog"
     )
+
+
+    st.link_button(
+        "📝 Remplir Google Forms",
+        google_url
+    )
+
+
 
 with col2:
 
-    st.subheader("KoboToolbox")
+    st.subheader(
+        "KoboToolbox"
+    )
+
 
     st.write(
-"""
-Version reproduisant le formulaire avec les logiques
-conditionnelles demandées dans le sujet.
-"""
+    """
+    Formulaire KoboToolbox utilisant XLSForm
+    avec logique conditionnelle et validation.
+    """
     )
 
-    st.link_button(
-        "Accéder au formulaire KoboToolbox",
-        KOBO_FORM_URL,
-        use_container_width=True
+
+    kobo_url = (
+        "https://ee.kobotoolbox.org/x/O8ODJ0sY"
     )
+
+
+    st.link_button(
+        "📊 Remplir KoboToolbox",
+        kobo_url
+    )
+
+
 
 st.divider()
 
-# =====================================================
-# RAPPEL
-# =====================================================
 
-st.header("Informations")
 
-st.info(
+st.success(
 """
-Les deux formulaires contiennent les mêmes questions.
+Les deux formulaires d'évaluation sont disponibles.
 
-Ils permettent de recueillir les retours des utilisateurs
-afin d'améliorer la plateforme.
+Les données collectées permettront d'analyser :
+- l'expérience utilisateur
+- la satisfaction
+- les problèmes rencontrés
+- les suggestions d'amélioration
 """
 )
 
-st.divider()
+
 
 st.caption(
 """
-Projet Data Collection
+Data Collection Project
+Web Scraping | Data Cleaning | Data Visualization | Evaluation
 
-Développé par Alpha Abdoulaye Lansar
-
+Réalisé par Alpha Abdoulaye Lansar
 Master Intelligence Artificielle
 """
 )
