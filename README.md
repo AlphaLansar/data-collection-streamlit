@@ -1,430 +1,512 @@
-Tu es mon assistant technique pour terminer mon projet d'examen Master IA :
-"Data Collection — Web scraping, nettoyage de données et déploiement d'une application Streamlit".
+# Data Collection & Analytics Platform
 
-IMPORTANT :
+## Projet d'examen — Data Collection, Web Scraping, Cleaning & Streamlit Deployment
 
-- Ne me donne pas de longues discussions inutiles.
-- Je veux avancer étape par étape jusqu'à la livraison finale.
-- Toujours donner des commandes terminal exactes.
-- Toujours donner les chemins exacts des fichiers.
-- Quand un fichier doit être modifié, donner le code COMPLET du fichier, pas des morceaux.
-- Après chaque étape, attendre mon retour avant de continuer.
-- Si une erreur apparaît, on la corrige avant de passer à l'étape suivante.
-- Ne jamais casser ce qui fonctionne déjà.
-- Pas d'emojis dans le travail.
-- Objectif : projet professionnel prêt pour GitHub, vidéo de démonstration et dépôt final.
+**Auteur : Alpha Abdoulaye Lansar**  
+**Master Intelligence Artificielle**  
 
-==============================
-CONTEXTE DU PROJET
-==================
+Projet réalisé dans le cadre du module **Data Collection**.
 
-Projet :
-Data Collection — Web scraping, nettoyage de données et déploiement Streamlit.
+---
 
-Critères du professeur :
+# 1. Présentation du projet
 
-1) Sources de données
+Ce projet consiste à concevoir une plateforme complète de collecte, traitement, stockage et visualisation de données issues du web.
 
-SOURCE 1 :
-Books to Scrape
+L'objectif est de mettre en place une chaîne complète de traitement des données :
+
+```
+Web Sources
+     |
+     ↓
+Web Scraping Selenium
+     |
+     ↓
+Nettoyage et préparation des données
+     |
+     ↓
+Stockage SQL SQLite
+     |
+     ↓
+Analyse exploratoire
+     |
+     ↓
+Dashboard interactif Streamlit
+     |
+     ↓
+Evaluation utilisateur
+```
+
+L'application permet :
+
+- de scraper automatiquement des données web ;
+- de nettoyer et transformer les données collectées ;
+- de stocker les données dans une base SQL ;
+- d'explorer les résultats via des dashboards interactifs ;
+- de télécharger les datasets ;
+- d'évaluer l'application grâce aux formulaires Google Forms et KoboToolbox.
+
+---
+
+# 2. Sources de données
+
+Deux sources de données ont été utilisées conformément aux consignes du projet.
+
+---
+
+## Source 1 — Books To Scrape
+
+URL :
+
+```
 https://books.toscrape.com/catalogue/page-1.html
+```
 
-Pagination :
-Toutes les pages du catalogue.
+### Pagination
 
-Variables demandées :
+Scraping réalisé sur plusieurs pages du catalogue.
 
-- Titre du livre
-- Prix
-- Disponibilité
-- Nombre de produits
-- Note
-- Nombre de reviews
-- Description
-- Type produit
-- Tax
+### Variables collectées
 
-SOURCE 2 :
-Gaaraas Dakar Auto
+| Variable | Description |
+|---|---|
+| title | Titre du livre |
+| price | Prix |
+| availability | Disponibilité |
+| products_count | Nombre de produits par page |
+| rating | Note du produit |
+| reviews | Nombre de reviews |
+| description | Description |
+| product_type | Catégorie du produit |
+| tax | Taxe |
+
+---
+
+## Source 2 — Gaaraas Cars
+
+URL :
+
+```
 https://www.gaaraas.com/fr/users/dakar-auto?page=1
+```
 
-Pagination :
-100 pages.
+### Pagination
 
-Variables demandées :
+Collecte réalisée sur plusieurs pages d'annonces automobiles.
 
-- Marque
-- Modèle
-- Année
-- Prix
-- Kilométrage
-- Type boîte
-- Région vente
+### Variables collectées
 
-==============================
-CONTRAINTES PROF
-================
+| Variable | Description |
+|---|---|
+| brand | Marque |
+| model | Modèle |
+| year | Année |
+| price | Prix |
+| mileage | Kilométrage |
+| transmission | Type de boîte |
+| region | Région de vente |
 
-Scraping coding :
+---
 
-- Selenium obligatoire.
-- BeautifulSoup interdit.
+# 3. Technologies utilisées
 
-Scraping no-code :
+## Langages
 
-- Web Scraper Chrome extension.
-- Données brutes non nettoyées.
+- Python
 
-Application Streamlit :
-Elle doit permettre :
+## Data Collection
 
-Scraper des données depuis plusieurs pages.
+- Selenium WebDriver
 
-L'utilisateur doit pouvoir choisir :
+## Data Processing
 
-- source Books ou Cars
-- nombre de pages à scraper
+- Pandas
+- NumPy
 
-Télécharger les données brutes issues du scraping no-code.
+## Database
 
-Dashboard des données nettoyées :
+- SQLite
+- SQLAlchemy
 
-- Books Dashboard
-- Cars Dashboard
+## Visualisation
 
-Accéder aux formulaires d'évaluation :
+- Streamlit
+- Matplotlib
+- Plotly
 
-- Kobo Form
-- Google Form
+## Versioning
 
-Base SQL :
+- Git
+- GitHub
 
-- Une base SQL liée à l'application.
-- Une table par source.
+---
 
-Formulaires :
+# 4. Architecture du projet
 
-- Kobo
-- Google Forms
-- accessibles depuis Streamlit.
+```
+exam-data-collection-final/
 
-==============================
-ETAT ACTUEL DU PROJET
-=====================
-
-Machine :
-Ubuntu 22.04
-Dell XPS 15 9570
-
-Projet :
-
-~/Documents/exam-data-collection-final
-
-Environnement :
-
-.venv activé.
-
-Structure actuelle :
-
-exam-data-collection-final
-
-├── analysis
-│   ├── books_analysis.py
-│   ├── cars_analysis.py
-│   └── check_raw_data.py
-
-├── cleaning
+│
+├── scraper/
+│   ├── books_scraper.py
+│   └── cars_scraper.py
+│
+├── cleaning/
 │   ├── clean_books.py
 │   └── clean_cars.py
-
-├── data
-│   ├── raw
-│   │   ├── books.csv
-│   │   └── cars.csv
-│   │
-│   └── cleaned
-│       ├── books_clean.csv
-│       └── cars_clean.csv
-
-├── database
+│
+├── analysis/
+│   ├── books_analysis.py
+│   └── cars_analysis.py
+│
+├── database/
 │   ├── database.py
 │   ├── models.py
 │   ├── import_books.py
-│   ├── import_cars.py
-│   ├── check_books.py
-│   ├── check_cars.py
-│   └── __init__.py
-
-├── reports
-│   ├── books
-│   │   ├── figures
-│   │   └── statistics
-│   │
-│   └── cars
-│       ├── figures
-│       └── statistics
-
-├── scraper
-│   ├── books_scraper.py
-│   └── cars_scraper.py
-
-├── streamlit_app
+│   └── import_cars.py
+│
+├── data/
+│   ├── raw/
+│   ├── cleaned/
+│   └── nocode/
+│
+├── reports/
+│   ├── figures/
+│   └── statistics/
+│
+├── streamlit_app/
 │   ├── Home.py
-│   └── pages
+│   └── pages/
+│       ├── 1_Scraping.py
 │       ├── Books_Dashboard.py
 │       ├── Cars_Dashboard.py
 │       ├── Download.py
 │       └── Evaluation.py
+│
+├── requirements.txt
+│
+└── README.md
+```
 
-==============================
-CE QUI EST DEJA TERMINE
-=======================
+---
 
-1) Scraping Books Selenium :
-   Fonctionne.
+# 5. Installation
 
-Ancien résultat :
-999 livres.
+## Cloner le projet
 
-2) Nettoyage Books :
-   Fonctionne.
+```bash
+git clone https://github.com/AlphaLansar/data-collection-streamlit.git
+```
 
-books_clean.csv existe.
+Entrer dans le dossier :
 
-3) Base SQL Books :
-   Fonctionne.
+```bash
+cd exam-data-collection-final
+```
 
-Test :
+---
 
-python -c "from sqlalchemy import create_engine, inspect; engine=create_engine('sqlite:///books.db'); print(inspect(engine).get_table_names())"
+# 6. Création de l'environnement virtuel
+
+Créer l'environnement :
+
+```bash
+python3 -m venv .venv
+```
+
+Activer :
+
+Linux :
+
+```bash
+source .venv/bin/activate
+```
+
+---
+
+# 7. Installation des dépendances
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# 8. Scraping avec Selenium
+
+## Books To Scrape
+
+Exemple :
+
+```bash
+python scraper/books_scraper.py --pages 5
+```
 
 Résultat :
 
-['books']
+```
+data/raw/books.csv
+```
 
-4) Scraping Cars :
-   Fonctionne dans une ancienne version.
+---
 
-Résultat obtenu :
-245 voitures.
+## Gaaraas Cars
 
-cars_clean.csv existe.
+Exemple :
 
-Colonnes :
-
-url
-title
-location
-price
-mileage
-year
-color
-body_type
-fuel
-transmission
-engine
-air_conditioning
-steering
-condition
-status
-created_date
-description
-
-5) Nettoyage Cars :
-   Fonctionne.
+```bash
+python scraper/cars_scraper.py --pages 5
+```
 
 Résultat :
 
-245 lignes.
+```
+data/raw/cars.csv
+```
 
-6) Analyse Books :
-   Terminé.
+---
 
-Créé :
+# 9. Nettoyage des données
 
-reports/books/figures
+## Books
 
-- books_availability.png
-- books_price_distribution.png
-- books_price_rating.png
-- books_rating_distribution.png
-- books_top_expensive.png
+```bash
+python cleaning/clean_books.py
+```
 
-7) Analyse Cars :
-   Terminé.
+Résultat :
 
-Créé :
+```
+data/cleaned/books_clean.csv
+```
 
-reports/cars/figures
+---
 
-- car_brands.png
-- car_fuel.png
-- car_price_distribution.png
-- car_price_fuel.png
-- car_year_price.png
+## Cars
 
-8) Dashboard Streamlit :
+```bash
+python cleaning/clean_cars.py
+```
 
-Lancé avec :
+Résultat :
 
+```
+data/cleaned/cars_clean.csv
+```
+
+---
+
+# 10. Base de données SQL
+
+La base utilisée est SQLite.
+
+Création et import :
+
+## Books
+
+```bash
+python -m database.import_books
+```
+
+## Cars
+
+```bash
+python -m database.import_cars
+```
+
+Base générée :
+
+```
+books_cars.db
+```
+
+Tables :
+
+- books
+- cars
+
+---
+
+# 11. Application Streamlit
+
+Lancer l'application :
+
+```bash
 streamlit run streamlit_app/Home.py
+```
 
-Fonctionne :
+L'application contient :
 
-- Books Dashboard
-- Cars Dashboard
+## Module Scraping
 
-Problèmes restants :
+Permet :
 
-- bouton Download à améliorer
-- Evaluation page à connecter
+- lancer la collecte Selenium ;
+- choisir la source ;
+- choisir le nombre de pages.
 
-==============================
-POINT EXACT OU ON S'EST ARRETE
-==============================
+---
 
-On travaille actuellement sur :
+## Module Download
 
-scraper/cars_scraper.py
+Permet :
 
-La première version avait collecté 245 voitures.
+- télécharger les données brutes Selenium ;
+- télécharger les données nettoyées ;
+- télécharger les données issues du scraping no-code Web Scraper.
 
-Une nouvelle version plus lente a été testée.
+---
 
-Le dernier code donné doit être vérifié.
+## Dashboards
 
-Commande de test :
+### Books Dashboard
 
-python scraper/cars_scraper.py --pages 1
+Fonctionnalités :
 
-Objectif :
-avoir :
+- statistiques générales ;
+- analyse des prix ;
+- distribution des notes ;
+- catégories ;
+- filtres interactifs.
 
-Scraping page 1
+---
 
-Annonces trouvées: ...
+### Cars Dashboard
 
-Puis :
+Fonctionnalités :
 
-CSV créé
+- statistiques automobiles ;
+- analyse des prix ;
+- marques populaires ;
+- kilométrage ;
+- transmission ;
+- filtres dynamiques.
 
-Nombre voitures: ...
+---
 
-==============================
-OBJECTIF FINAL RESTANT
-======================
+## Module Evaluation
 
-Terminer rapidement :
+Accès aux formulaires :
 
-ETAPE 1 :
-Valider cars_scraper.py
+- Google Forms ;
+- KoboToolbox.
 
-ETAPE 2 :
-Améliorer Home.py Streamlit :
+---
 
-L'application finale doit avoir :
+# 12. Scraping No-Code
 
-Accueil
+Une seconde collecte est réalisée avec l'extension Chrome :
 
-Choix :
+```
+Web Scraper
+```
 
-1 - Scraper Books
-2 - Scraper Cars
+Les fichiers bruts seront stockés dans :
 
-Input :
-Nombre de pages
+```
+data/nocode/
+```
 
-Bouton :
-Lancer scraping
+Structure prévue :
 
-Afficher :
-progression
+```
+data/nocode/
 
-Sauvegarder CSV
+├── books_webscraper_raw.csv
 
-ETAPE 3 :
-Dashboard professionnel :
+└── cars_webscraper_raw.csv
+```
 
-Books :
+---
 
-- KPIs
-- filtres
-- graphiques Plotly interactifs
-- tableau
-- téléchargement
+# 13. Nettoyage appliqué
 
-Cars :
+Les traitements réalisés :
 
-- KPIs
-- filtres
-- prix
-- carburant
-- année
-- kilométrage
-- graphiques Plotly interactifs
-- tableau
-- téléchargement
+- suppression des valeurs manquantes ;
+- conversion des types numériques ;
+- nettoyage des prix ;
+- nettoyage du kilométrage ;
+- traitement des doublons ;
+- standardisation des colonnes.
 
-ETAPE 4 :
-Download Page :
+---
 
-Permettre :
+# 14. Résultats
 
-Télécharger :
+La plateforme permet :
 
-- raw books.csv
-- raw cars.csv
-- cleaned books_clean.csv
-- cleaned cars_clean.csv
+- une collecte automatisée ;
+- une préparation complète des données ;
+- une visualisation interactive ;
+- un stockage structuré ;
+- une évaluation utilisateur.
 
-ETAPE 5 :
-Evaluation Page :
+---
 
-Créer liens :
+# 15. Déploiement
 
-Google Form
-Kobo Form
+Application Streamlit :
 
-ETAPE 6 :
-README professionnel :
+Lien :
 
-README.md doit contenir :
+```
+À compléter après déploiement
+```
 
-- contexte
-- objectifs
-- architecture
-- technologies
-- installation
-- utilisation
-- screenshots
-- résultats
-- limites
-- perspectives
+Repository GitHub :
 
-ETAPE 7 :
-Préparation vidéo 10 minutes :
+```
+https://github.com/AlphaLansar/data-collection-streamlit
+```
 
-8 minutes :
-explication code
+---
 
-2 minutes :
-démonstration application
+# 16. Vidéo de présentation
 
-==============================
-METHODE DE TRAVAIL
-==================
+Structure :
 
-Toujours travailler ainsi :
+## Partie 1 — Explication du code (8 minutes)
 
-Analyser l'état actuel.
+Présentation :
 
-Donner UNE seule étape.
+- architecture du projet ;
+- scraping Selenium ;
+- nettoyage ;
+- base SQL ;
+- dashboards.
 
-Donner commandes exactes.
+## Partie 2 — Démonstration application (2 minutes)
 
-Donner fichiers complets si modification.
+Présentation :
 
-Attendre mon retour.
+- lancement scraping ;
+- visualisation dashboard ;
+- téléchargement ;
+- formulaires d'évaluation.
 
-Reprends maintenant exactement où nous sommes arrêtés :
-validation de scraper/cars_scraper.py puis finalisation Streamlit selon les critères du professeur.
+---
+
+# 17. Auteur
+
+## Alpha Abdoulaye Lansar
+
+Master Intelligence Artificielle
+
+Domaines d'intérêt :
+
+- Artificial Intelligence
+- Data Science
+- Robotics
+- Edge AI
+- Intelligent Systems
+
+---
+
+# Conclusion
+
+Ce projet met en œuvre une chaîne complète de collecte et exploitation de données :
+
+**Collect → Clean → Store → Analyze → Visualize → Evaluate**
+
+Il constitue une base pour le développement de solutions intelligentes orientées données.

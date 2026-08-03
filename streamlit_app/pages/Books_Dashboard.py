@@ -10,6 +10,26 @@ st.set_page_config(
 )
 
 
+st.title(
+    "Books Analytics Dashboard"
+)
+
+
+st.write(
+"""
+Analyse interactive des livres collectés
+depuis Books to Scrape.
+
+Pipeline :
+Scraping Selenium → Cleaning Pandas → Analyse → Dashboard
+"""
+)
+
+
+
+# ==========================
+# DATASET
+# ==========================
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(
@@ -18,7 +38,6 @@ BASE_DIR = os.path.dirname(
         )
     )
 )
-
 
 
 FILE = os.path.join(
@@ -41,140 +60,167 @@ df = load_data()
 
 
 
-required_columns = [
-    "title",
-    "price",
-    "rating",
-    "product_type",
-    "availability"
-]
-
-
-missing = [
-    c for c in required_columns
-    if c not in df.columns
-]
-
-
-if missing:
-
-    st.error(
-        f"Colonnes manquantes : {missing}"
-    )
-
-    st.write(
-        df.columns.tolist()
-    )
-
-    st.stop()
-
-
-
-st.title(
-    "Books Analytics Dashboard"
-)
-
-
-
-st.write(
-"""
-Analyse du catalogue Books To Scrape.
-
-Pipeline :
-Selenium → Nettoyage Pandas → Dashboard Streamlit
-"""
-)
-
-
-
 st.success(
     f"Dataset chargé : {len(df)} livres"
 )
 
 
 
+# ==========================
+# INDICATEURS
+# ==========================
+
+
+st.header(
+    "Indicateurs principaux"
+)
+
+
+
+c1,c2,c3,c4 = st.columns(4)
+
+
+
+with c1:
+
+    st.metric(
+        "Nombre livres",
+        len(df)
+    )
+
+
+
+with c2:
+
+    st.metric(
+        "Prix moyen",
+        f"{df['price'].mean():.2f} £"
+    )
+
+
+
+with c3:
+
+    st.metric(
+        "Note moyenne",
+        round(
+            df["rating"].mean(),
+            2
+        )
+    )
+
+
+
+with c4:
+
+    st.metric(
+        "Types de livres",
+        df["product_type"].nunique()
+    )
+
+
+
 st.divider()
 
 
 
-col1,col2,col3,col4 = st.columns(4)
-
-
-
-col1.metric(
-    "Nombre livres",
-    len(df)
-)
-
-
-
-col2.metric(
-    "Prix moyen",
-    f"{df['price'].mean():.2f} £"
-)
-
-
-
-col3.metric(
-    "Note moyenne",
-    f"{df['rating'].mean():.2f}"
-)
-
-
-
-col4.metric(
-    "Catégories",
-    df["product_type"].nunique()
-)
-
-
-
-st.divider()
-
-
+# ==========================
+# TABLE
+# ==========================
 
 st.header(
-    "Distribution prix"
+    "Données livres"
 )
-
-
-
-fig,ax = plt.subplots()
-
-
-ax.hist(
-    df["price"],
-    bins=15
-)
-
-
-st.pyplot(fig)
-
-
-
-st.header(
-    "Distribution notes"
-)
-
-
-st.bar_chart(
-    df["rating"].value_counts()
-)
-
-
-
-st.header(
-    "Catégories"
-)
-
-
-st.bar_chart(
-    df["product_type"].value_counts()
-)
-
 
 
 st.dataframe(
     df,
     use_container_width=True
 )
+
+
+
+st.divider()
+
+
+
+# ==========================
+# GRAPHIQUES
+# ==========================
+
+
+st.header(
+    "Visualisations"
+)
+
+
+
+col1,col2 = st.columns(2)
+
+
+
+with col1:
+
+    st.subheader(
+        "Distribution des prix"
+    )
+
+
+    fig,ax = plt.subplots()
+
+
+    ax.hist(
+        df["price"],
+        bins=20
+    )
+
+
+    ax.set_xlabel(
+        "Prix (£)"
+    )
+
+
+    ax.set_ylabel(
+        "Nombre de livres"
+    )
+
+
+    st.pyplot(fig)
+
+
+
+with col2:
+
+
+    st.subheader(
+        "Répartition des notes"
+    )
+
+
+    rating_count = (
+        df["rating"]
+        .value_counts()
+        .sort_index()
+    )
+
+
+    fig,ax = plt.subplots()
+
+
+    ax.bar(
+        rating_count.index,
+        rating_count.values
+    )
+
+
+    ax.set_xlabel(
+        "Note"
+    )
+
+
+    ax.set_ylabel(
+        "Nombre"
+    )
+
+
+    st.pyplot(fig)

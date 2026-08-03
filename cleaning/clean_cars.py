@@ -11,16 +11,20 @@ print(" CLEANING CARS DATA ")
 print("==============================")
 
 
+# ==========================
 # Chargement
+# ==========================
+
 df = pd.read_csv(INPUT_FILE)
 
 
-print("Avant nettoyage:", df.shape)
+print("Dataset brut :", df.shape)
 
 
 
 # ==========================
-# Colonnes examen professeur
+# Colonnes retenues
+# Critères dashboard
 # ==========================
 
 columns = [
@@ -44,10 +48,25 @@ df = df[
 
 
 # ==========================
+# Suppression lignes vides
+# ==========================
+
+df = df.dropna(
+    how="all"
+)
+
+
+
+# ==========================
 # Nettoyage texte
 # ==========================
 
-for col in df.select_dtypes(include="object").columns:
+text_columns = df.select_dtypes(
+    include="object"
+).columns
+
+
+for col in text_columns:
 
     df[col] = (
         df[col]
@@ -66,9 +85,9 @@ df["price"] = (
     df["price"]
     .astype(str)
     .str.replace(
-        " ",
+        r"[^\d]",
         "",
-        regex=False
+        regex=True
     )
 )
 
@@ -86,16 +105,16 @@ df["price"] = df["price"].fillna(
 
 
 # ==========================
-# Nettoyage kilométrage
+# Nettoyage mileage
 # ==========================
 
 df["mileage"] = (
     df["mileage"]
     .astype(str)
     .str.replace(
-        " ",
+        r"[^\d]",
         "",
-        regex=False
+        regex=True
     )
 )
 
@@ -135,12 +154,32 @@ df["year"] = df["year"].astype(int)
 # Suppression doublons
 # ==========================
 
-df = df.drop_duplicates()
+if "url" in df.columns:
+
+    df = df.drop_duplicates(
+        subset=["url"]
+    )
+
+else:
+
+    df = df.drop_duplicates()
 
 
 
 # ==========================
-# Sauvegarde
+# Types finaux
+# ==========================
+
+df["price"] = df["price"].astype(float)
+
+df["mileage"] = df["mileage"].astype(int)
+
+df["year"] = df["year"].astype(int)
+
+
+
+# ==========================
+# Export
 # ==========================
 
 os.makedirs(
@@ -151,35 +190,62 @@ os.makedirs(
 
 df.to_csv(
     OUTPUT_FILE,
-    index=False
+    index=False,
+    encoding="utf-8"
 )
 
 
 
-print("Après nettoyage:", df.shape)
-
 print()
+print("==============================")
+print("NETTOYAGE TERMINE")
+print("==============================")
 
-print("Colonnes finales:")
-print(df.columns.tolist())
-
-
-print()
-
-print("Valeurs manquantes:")
-print(df.isnull().sum())
+print(
+    "Dataset final :",
+    df.shape
+)
 
 
 print()
 
-print("Statistiques prix:")
-print(df["price"].describe())
+print(
+    "Colonnes finales :"
+)
+
+print(
+    df.columns.tolist()
+)
 
 
 print()
 
-print("Fichier créé:")
-print(OUTPUT_FILE)
+print(
+    "Valeurs manquantes :"
+)
+
+print(
+    df.isnull().sum()
+)
+
+
+print()
+
+print(
+    "Statistiques prix :"
+)
+
+print(
+    df["price"].describe()
+)
+
+
+print()
+
+print(
+    "Fichier généré :",
+    OUTPUT_FILE
+)
 
 
 print("==============================")

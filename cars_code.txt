@@ -4,6 +4,7 @@ import time
 import argparse
 import pandas as pd
 
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -14,15 +15,18 @@ from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 
 
+
 BASE_URL = "https://www.gaaraas.com/fr/users/dakar-auto?page={}"
 
 OUTPUT_FILE = "data/raw/cars.csv"
 
 
 
-# =========================
+
+
+# =====================================================
 # DRIVER
-# =========================
+# =====================================================
 
 def create_driver():
 
@@ -48,19 +52,25 @@ def create_driver():
     )
 
 
-    driver.set_page_load_timeout(60)
+    driver.set_page_load_timeout(
+        60
+    )
+
 
     return driver
 
 
 
-# =========================
+
+
+# =====================================================
 # UTILITAIRES
-# =========================
+# =====================================================
 
 def clean_text(text):
 
     if not text:
+
         return ""
 
     return (
@@ -71,27 +81,36 @@ def clean_text(text):
 
 
 
+
 def extract_year(title):
 
     if not title:
+
         return ""
+
 
     result = re.search(
         r"(19|20)\d{2}",
         title
     )
 
+
     if result:
+
         return result.group()
 
+
     return ""
+
 
 
 
 def extract_brand_model(title):
 
     if not title:
+
         return "", ""
+
 
     parts = title.split()
 
@@ -100,25 +119,35 @@ def extract_brand_model(title):
         r"(19|20)\d{2}",
         parts[0]
     ):
+
         parts = parts[1:]
 
 
     if len(parts)==0:
+
         return "", ""
 
 
-    return (
-        parts[0],
-        " ".join(parts[1:])
+    brand = parts[0]
+
+
+    model = " ".join(
+        parts[1:]
     )
 
 
+    return brand, model
 
-# =========================
-# EXTRACTION
-# =========================
+
+
+
+
+# =====================================================
+# EXTRACTION CARTE
+# =====================================================
 
 def extract_card(card):
+
 
     car = {
 
@@ -140,6 +169,10 @@ def extract_card(card):
 
 
 
+
+
+    # URL
+
     try:
 
         link = card.find_element(
@@ -147,15 +180,21 @@ def extract_card(card):
             "./ancestor::a"
         )
 
+
         car["url"] = link.get_attribute(
             "href"
         )
+
 
     except:
 
         pass
 
 
+
+
+
+    # TITRE
 
     try:
 
@@ -170,11 +209,18 @@ def extract_card(card):
         car["title"] = title
 
 
-        brand, model = extract_brand_model(title)
+        brand, model = extract_brand_model(
+            title
+        )
+
 
         car["brand"] = brand
+
         car["model"] = model
-        car["year"] = extract_year(title)
+
+        car["year"] = extract_year(
+            title
+        )
 
 
     except:
@@ -182,6 +228,10 @@ def extract_card(card):
         pass
 
 
+
+
+
+    # LOCATION
 
     try:
 
@@ -191,7 +241,11 @@ def extract_card(card):
         ).text
 
 
-        car["location"] = clean_text(location)
+        car["location"] = clean_text(
+            location
+        )
+
+
         car["region"] = car["location"]
 
 
@@ -200,6 +254,10 @@ def extract_card(card):
         pass
 
 
+
+
+
+    # PRICE
 
     try:
 
@@ -210,11 +268,16 @@ def extract_card(card):
             ).text
         )
 
+
     except:
 
         pass
 
 
+
+
+
+    # MILEAGE
 
     try:
 
@@ -224,18 +287,36 @@ def extract_card(card):
         ).text
 
 
-        car["mileage"] = (
+        mileage = (
             mileage
-            .replace("km","")
-            .replace("KM","")
-            .replace(" ","")
+            .replace(
+                "km",
+                ""
+            )
+            .replace(
+                "KM",
+                ""
+            )
+            .replace(
+                " ",
+                ""
+            )
         )
+
+
+        car["mileage"] = mileage
+
+
 
     except:
 
         pass
 
 
+
+
+
+    # ENGINE + FUEL
 
     try:
 
@@ -256,19 +337,39 @@ def extract_card(card):
 
         for span in spans:
 
-            txt = clean_text(span.text)
+            txt = clean_text(
+                span.text
+            )
 
             if txt:
-                values.append(txt)
+
+                values.append(
+                    txt
+                )
 
 
 
         if len(values)>0:
+
             car["engine"] = values[0]
 
 
+
         if len(values)>1:
-            car["fuel"] = values[1]
+
+            car["fuel"] = (
+                values[1]
+                .replace(
+                    "(",
+                    ""
+                )
+                .replace(
+                    ")",
+                    ""
+                )
+                .strip()
+            )
+
 
 
     except:
@@ -276,6 +377,10 @@ def extract_card(card):
         pass
 
 
+
+
+
+    # TRANSMISSION
 
     try:
 
@@ -286,11 +391,16 @@ def extract_card(card):
             ).text
         )
 
+
     except:
 
         pass
 
 
+
+
+
+    # STATUS
 
     try:
 
@@ -301,9 +411,11 @@ def extract_card(card):
             ).text
         )
 
+
     except:
 
         pass
+
 
 
 
@@ -311,36 +423,37 @@ def extract_card(card):
 
 
 
-# =========================
-# SCRAPER TOUTES LES PAGES
-# =========================
 
-def scrape_cars(pages=None):
+
+# =====================================================
+# SCRAPER
+# =====================================================
+
+def scrape_cars(pages):
 
 
     driver = create_driver()
 
+
     cars=[]
 
-    page = 1
 
 
     try:
 
 
-        while True:
+        for page in range(
+            1,
+            pages+1
+        ):
 
 
-
-            if pages and page > pages:
-                break
-
-
-
+            print()
             print(
                 "Scraping page",
                 page
             )
+
 
 
             try:
@@ -357,7 +470,7 @@ def scrape_cars(pages=None):
                     page
                 )
 
-                break
+                continue
 
 
 
@@ -378,25 +491,17 @@ def scrape_cars(pages=None):
 
 
 
-            if len(cards)==0:
-
-                print(
-                    "Fin du scraping"
-                )
-
-                break
-
-
-
             for card in cards:
 
-                cars.append(
-                    extract_card(card)
+
+                car = extract_card(
+                    card
                 )
 
 
-
-            page += 1
+                cars.append(
+                    car
+                )
 
 
 
@@ -410,9 +515,11 @@ def scrape_cars(pages=None):
 
 
 
-# =========================
+
+
+# =====================================================
 # CSV
-# =========================
+# =====================================================
 
 def save_csv(data):
 
@@ -423,7 +530,9 @@ def save_csv(data):
     )
 
 
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(
+        data
+    )
 
 
     df.to_csv(
@@ -433,8 +542,11 @@ def save_csv(data):
     )
 
 
+    print()
     print("======================")
-    print("CSV créé avec succès")
+    print(
+        "CSV créé avec succès"
+    )
     print(
         "Nombre voitures:",
         len(df)
@@ -444,9 +556,10 @@ def save_csv(data):
 
 
 
-# =========================
+
+# =====================================================
 # MAIN
-# =========================
+# =====================================================
 
 if __name__ == "__main__":
 
@@ -457,7 +570,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--pages",
         type=int,
-        default=None
+        default=1
     )
 
 
@@ -470,4 +583,6 @@ if __name__ == "__main__":
     )
 
 
-    save_csv(cars)
+    save_csv(
+        cars
+    )
