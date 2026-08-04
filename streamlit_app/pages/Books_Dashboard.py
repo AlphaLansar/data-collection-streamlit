@@ -1,26 +1,55 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import os
 
 
 st.set_page_config(
-
-    page_title="Books Dashboard",
-
+    page_title="Books Analytics",
     layout="wide"
-
 )
 
 
+# ==========================
+# TITRE
+# ==========================
 
-st.title(
-    "📚 Dashboard - Books To Scrape"
+st.title("Books Analytics Dashboard")
+
+
+st.markdown(
+"""
+Analyse interactive du catalogue Books To Scrape.
+
+Pipeline :
+Web Scraping Selenium → Nettoyage Pandas → Analyse → Visualisation
+"""
 )
 
 
+st.divider()
 
-FILE = "data/cleaned/books_clean.csv"
+
+
+# ==========================
+# DATASET
+# ==========================
+
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
+
+
+FILE = os.path.join(
+    BASE_DIR,
+    "data",
+    "cleaned",
+    "books_clean.csv"
+)
 
 
 
@@ -35,195 +64,86 @@ df = load_data()
 
 
 
+if df.empty:
+
+    st.error(
+        "Dataset vide"
+    )
+
+    st.stop()
+
+
+
 st.success(
-
-    f"Dataset chargé : {len(df)} livres"
-
+    f"{len(df)} livres chargés depuis le dataset nettoyé"
 )
 
 
 
-# ============================
-# INFORMATIONS GENERALES
-# ============================
-
-
-st.header("📌 Informations générales")
+st.divider()
 
 
 
-col1,col2,col3,col4 = st.columns(4)
+# ==========================
+# KPI
+# ==========================
+
+st.header(
+    "Indicateurs principaux"
+)
 
 
 
-with col1:
+c1,c2,c3,c4 = st.columns(4)
+
+
+
+with c1:
 
     st.metric(
-
         "Nombre de livres",
-
         len(df)
-
     )
 
 
 
-with col2:
+with c2:
 
     st.metric(
-
         "Prix moyen",
-
         f"{df['price'].mean():.2f} £"
-
     )
 
 
 
-with col3:
+with c3:
 
     st.metric(
-
-        "Prix maximum",
-
-        f"{df['price'].max():.2f} £"
-
+        "Note moyenne",
+        f"{df['rating'].mean():.2f}/5"
     )
 
 
 
-with col4:
+with c4:
 
     st.metric(
-
         "Catégories",
-
         df["product_type"].nunique()
-
     )
 
 
 
-
-
 st.divider()
 
 
 
-# ============================
+# ==========================
 # FILTRES
-# ============================
-
-
-
-st.sidebar.header(
-    "Filtres"
-)
-
-
-
-rating = st.sidebar.multiselect(
-
-    "Note",
-
-    df["rating"].unique()
-
-)
-
-
-
-availability = st.sidebar.multiselect(
-
-    "Disponibilité",
-
-    df["availability"].unique()
-
-)
-
-
-
-category = st.sidebar.multiselect(
-
-    "Type de produit",
-
-    df["product_type"].unique()
-
-)
-
-
-
-filtered=df.copy()
-
-
-
-if rating:
-
-    filtered = filtered[
-
-        filtered["rating"].isin(rating)
-
-    ]
-
-
-
-if availability:
-
-    filtered = filtered[
-
-        filtered["availability"].isin(availability)
-
-    ]
-
-
-
-if category:
-
-    filtered = filtered[
-
-        filtered["product_type"].isin(category)
-
-    ]
-
-
-
-
-
-# ============================
-# TABLEAU
-# ============================
-
-
+# ==========================
 
 st.header(
-    "📋 Données des livres"
-)
-
-
-
-st.dataframe(
-
-    filtered,
-
-    use_container_width=True
-
-)
-
-
-
-
-
-st.divider()
-
-
-
-# ============================
-# GRAPHIQUES
-# ============================
-
-
-
-st.header(
-    "📊 Visualisations"
+    "Filtres interactifs"
 )
 
 
@@ -234,24 +154,95 @@ col1,col2 = st.columns(2)
 
 with col1:
 
+    ratings = st.multiselect(
+        "Sélectionner les notes",
+        sorted(df["rating"].unique()),
+        default=list(df["rating"].unique())
+    )
+
+
+
+with col2:
+
+    availability = st.multiselect(
+        "Disponibilité",
+        sorted(df["availability"].unique()),
+        default=list(df["availability"].unique())
+    )
+
+
+
+filtered = df[
+    (df["rating"].isin(ratings))
+    &
+    (df["availability"].isin(availability))
+]
+
+
+
+st.write(
+    f"Résultat : {len(filtered)} livres"
+)
+
+
+
+st.divider()
+
+
+
+# ==========================
+# TABLEAU
+# ==========================
+
+
+st.header(
+    "Données filtrées"
+)
+
+
+st.dataframe(
+    filtered,
+    use_container_width=True
+)
+
+
+
+st.divider()
+
+
+
+# ==========================
+# GRAPHIQUES
+# ==========================
+
+
+st.header(
+    "Analyses graphiques"
+)
+
+
+
+col1,col2 = st.columns(2)
+
+
+
+# Prix
+
+with col1:
+
 
     st.subheader(
         "Distribution des prix"
     )
 
 
-    fig,ax=plt.subplots()
-
+    fig,ax = plt.subplots()
 
 
     ax.hist(
-
         filtered["price"],
-
         bins=20
-
     )
-
 
 
     ax.set_xlabel(
@@ -260,7 +251,7 @@ with col1:
 
 
     ax.set_ylabel(
-        "Nombre livres"
+        "Nombre de livres"
     )
 
 
@@ -269,25 +260,29 @@ with col1:
 
 
 
+# Rating
 
 with col2:
 
 
     st.subheader(
-        "Distribution des notes"
+        "Répartition des notes"
     )
 
 
-    fig,ax=plt.subplots()
+    rating_count = (
+        filtered["rating"]
+        .value_counts()
+        .sort_index()
+    )
 
 
+    fig,ax = plt.subplots()
 
-    filtered["rating"].value_counts().plot(
 
-        kind="bar",
-
-        ax=ax
-
+    ax.bar(
+        rating_count.index.astype(str),
+        rating_count.values
     )
 
 
@@ -306,75 +301,34 @@ with col2:
 
 
 
-
-# ============================
-# PRODUITS LES PLUS CHERS
-# ============================
+st.divider()
 
 
 
-st.subheader(
+# ==========================
+# TOP PRODUITS
+# ==========================
 
-    "🏆 Livres les plus chers"
 
+st.header(
+    "Livres les plus chers"
 )
 
 
 
-top_books = filtered.sort_values(
-
-    by="price",
-
-    ascending=False
-
-).head(10)
+top_books = (
+    filtered
+    .sort_values(
+        "price",
+        ascending=False
+    )
+    [["title","price"]]
+    .head(10)
+)
 
 
 
 st.dataframe(
-
-    top_books[
-
-        [
-            "title",
-
-            "price",
-
-            "rating",
-
-            "product_type"
-
-        ]
-
-    ],
-
+    top_books,
     use_container_width=True
-
-)
-
-
-
-
-
-# ============================
-# VARIABLES DU PROFESSEUR
-# ============================
-
-
-st.info(
-"""
-Variables utilisées :
-
-✅ Titre du livre  
-✅ Prix  
-✅ Disponibilité  
-✅ Nombre produits sur page  
-✅ Note produit  
-✅ Nombre reviews  
-✅ Description  
-✅ Type produit  
-✅ Tax  
-
-Dashboard conforme au cahier des charges.
-"""
 )

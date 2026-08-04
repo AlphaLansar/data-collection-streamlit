@@ -3,20 +3,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-# =====================================================
-# CONFIGURATION
-# =====================================================
-
 INPUT_FILE = "data/cleaned/cars_clean.csv"
 
-
-FIGURE_DIR = "reports/cars/figures"
+FIG_DIR = "reports/cars/figures"
 
 STAT_DIR = "reports/cars/statistics"
 
 
 os.makedirs(
-    FIGURE_DIR,
+    FIG_DIR,
     exist_ok=True
 )
 
@@ -26,177 +21,132 @@ os.makedirs(
 )
 
 
-# =====================================================
-# CHARGEMENT DATA
-# =====================================================
 
 print("==============================")
-print(" CARS EXPLORATORY ANALYSIS ")
+print(" CARS DATA ANALYSIS ")
 print("==============================")
 
 
 df = pd.read_csv(INPUT_FILE)
 
 
-print("\nDataset chargé:")
-print(df.shape)
+print("Dataset chargé:", df.shape)
 
 
 
-# =====================================================
-# PREPARATION
-# =====================================================
+# =========================
+# STATISTIQUES
+# =========================
 
 
-df["price"] = pd.to_numeric(
-    df["price"],
-    errors="coerce"
+stats = []
+
+
+stats.append(
+    f"Nombre voitures: {len(df)}"
 )
 
 
-df["mileage"] = pd.to_numeric(
-    df["mileage"],
-    errors="coerce"
+stats.append(
+    f"Prix moyen: {df['price'].mean():.2f}"
 )
 
 
-df["year"] = pd.to_numeric(
-    df["year"],
-    errors="coerce"
+stats.append(
+    f"Prix maximum: {df['price'].max()}"
 )
 
 
-
-# =====================================================
-# STATISTIQUES GENERALES
-# =====================================================
-
-
-statistics = []
-
-
-statistics.append(
-    "Nombre total véhicules : "
-    + str(len(df))
+stats.append(
+    f"Prix minimum: {df['price'].min()}"
 )
 
 
-statistics.append(
-    "Prix moyen : "
-    + str(round(df["price"].mean(),2))
-    + " FCFA"
+stats.append(
+    f"Kilométrage moyen: {df['mileage'].mean():.2f}"
 )
 
 
-statistics.append(
-    "Prix minimum : "
-    + str(df["price"].min())
-    + " FCFA"
+stats.append(
+    f"Nombre marques: {df['brand'].nunique()}"
 )
 
 
-statistics.append(
-    "Prix maximum : "
-    + str(df["price"].max())
-    + " FCFA"
-)
-
-
-statistics.append(
-    "Kilométrage moyen : "
-    + str(round(df["mileage"].mean(),2))
-    + " km"
-)
-
-
-statistics.append(
-    "Année moyenne : "
-    + str(round(df["year"].mean(),2))
-)
-
-
-
-statistics.append(
-    "\nTransmission dominante : "
-    + str(
-        df["transmission"]
-        .value_counts()
-        .idxmax()
-    )
-)
-
-
-
-statistics.append(
-    "\nMarques principales :"
-)
-
-
-for brand,count in (
-    df["brand"]
-    .value_counts()
-    .head(10)
-    .items()
-):
-
-    statistics.append(
-        f"{brand} : {count}"
-    )
-
-
-
-
-# sauvegarde statistiques
 
 with open(
-    f"{STAT_DIR}/cars_statistics.txt",
+    STAT_DIR + "/cars_statistics.txt",
     "w",
     encoding="utf-8"
-) as file:
+) as f:
 
-    file.write(
-        "\n".join(statistics)
-    )
-
-
-print("\nStatistiques sauvegardées")
+    for s in stats:
+        f.write(s + "\n")
 
 
 
-# =====================================================
-# GRAPHIQUES
-# =====================================================
+# =========================
+# Prix distribution
+# =========================
 
 
-# 1 Distribution prix
-
-
-plt.figure(figsize=(10,6))
-
+plt.figure(figsize=(8,5))
 
 plt.hist(
     df["price"],
-    bins=20
+    bins=15
 )
-
 
 plt.title(
-    "Distribution des prix des véhicules"
+    "Distribution des prix des voitures"
 )
-
 
 plt.xlabel(
     "Prix FCFA"
 )
 
-
 plt.ylabel(
-    "Nombre véhicules"
+    "Nombre voitures"
 )
 
 
 plt.savefig(
-    f"{FIGURE_DIR}/price_distribution.png",
+    FIG_DIR + "/price_distribution.png",
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+
+# =========================
+# Kilométrage
+# =========================
+
+
+plt.figure(figsize=(8,5))
+
+plt.hist(
+    df["mileage"],
+    bins=15
+)
+
+
+plt.title(
+    "Distribution kilométrage"
+)
+
+plt.xlabel(
+    "Kilométrage"
+)
+
+
+plt.ylabel(
+    "Nombre voitures"
+)
+
+
+plt.savefig(
+    FIG_DIR + "/mileage_distribution.png",
     bbox_inches="tight"
 )
 
@@ -205,28 +155,21 @@ plt.close()
 
 
 
-# 2 Top marques
+# =========================
+# Marques
+# =========================
 
 
-brands = (
-    df["brand"]
-    .value_counts()
-    .head(10)
-)
+plt.figure(figsize=(8,5))
 
 
-
-plt.figure(figsize=(10,6))
-
-
-plt.bar(
-    brands.index,
-    brands.values
+df["brand"].value_counts().plot(
+    kind="bar"
 )
 
 
 plt.title(
-    "Top 10 marques automobiles"
+    "Top marques automobiles"
 )
 
 
@@ -236,8 +179,9 @@ plt.xlabel(
 
 
 plt.ylabel(
-    "Nombre annonces"
+    "Nombre"
 )
+
 
 
 plt.xticks(
@@ -246,7 +190,7 @@ plt.xticks(
 
 
 plt.savefig(
-    f"{FIGURE_DIR}/top_brands.png",
+    FIG_DIR + "/top_brands.png",
     bbox_inches="tight"
 )
 
@@ -255,95 +199,43 @@ plt.close()
 
 
 
+# =========================
+# Transmission
+# =========================
 
-# 3 Transmission
+
+plt.figure(figsize=(8,5))
 
 
-transmission = (
-    df["transmission"]
-    .value_counts()
+df["transmission"].value_counts().plot(
+    kind="bar"
 )
 
-
-
-plt.figure(figsize=(7,5))
-
-
-plt.bar(
-    transmission.index,
-    transmission.values
-)
 
 
 plt.title(
-    "Répartition des transmissions"
-)
-
-
-plt.xlabel(
-    "Transmission"
-)
-
-
-plt.ylabel(
-    "Nombre annonces"
-)
-
-
-plt.savefig(
-    f"{FIGURE_DIR}/transmission_distribution.png",
-    bbox_inches="tight"
-)
-
-
-plt.close()
-
-
-
-
-# 4 Kilométrage
-
-
-plt.figure(figsize=(10,6))
-
-
-plt.hist(
-    df["mileage"],
-    bins=20
-)
-
-
-plt.title(
-    "Distribution du kilométrage"
-)
-
-
-plt.xlabel(
-    "Kilométrage (km)"
-)
-
-
-plt.ylabel(
-    "Nombre véhicules"
+    "Types de transmission"
 )
 
 
 
 plt.savefig(
-    f"{FIGURE_DIR}/mileage_distribution.png",
+    FIG_DIR + "/transmission_distribution.png",
     bbox_inches="tight"
 )
+
 
 
 plt.close()
 
 
 
+# =========================
+# Année / Prix
+# =========================
 
-# 5 Année vs prix
 
-
-plt.figure(figsize=(10,6))
+plt.figure(figsize=(8,5))
 
 
 plt.scatter(
@@ -354,7 +246,7 @@ plt.scatter(
 
 
 plt.title(
-    "Relation année du véhicule et prix"
+    "Relation année et prix"
 )
 
 
@@ -368,9 +260,8 @@ plt.ylabel(
 )
 
 
-
 plt.savefig(
-    f"{FIGURE_DIR}/year_price_relation.png",
+    FIG_DIR + "/year_price_relation.png",
     bbox_inches="tight"
 )
 
@@ -379,6 +270,9 @@ plt.close()
 
 
 
-print("\n==============================")
+print("Statistiques sauvegardées")
+
+
+print("==============================")
 print(" ANALYSE TERMINEE ")
 print("==============================")

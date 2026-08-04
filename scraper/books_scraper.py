@@ -1,15 +1,13 @@
 import os
 import csv
-import argparse
 import time
+import argparse
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -17,7 +15,15 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 OUTPUT_FILE = "data/raw/books.csv"
 
+BASE_URL = (
+    "https://books.toscrape.com/catalogue/page-{}.html"
+)
 
+
+
+# ==========================
+# DRIVER
+# ==========================
 
 def create_driver():
 
@@ -27,27 +33,29 @@ def create_driver():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
-    driver = webdriver.Chrome(
+
+    return webdriver.Chrome(
         service=Service(
             ChromeDriverManager().install()
         ),
         options=options
     )
 
-    return driver
 
 
+# ==========================
+# UTILITAIRES
+# ==========================
 
 def clean_price(price):
 
     try:
 
-        price = price.replace(
-            "£",
-            ""
+        return float(
+            price
+            .replace("£","")
+            .strip()
         )
-
-        return float(price.strip())
 
     except:
 
@@ -55,8 +63,169 @@ def clean_price(price):
 
 
 
+# ==========================
+# DETAIL LIVRE
+# ==========================
 
-def scrape_books(pages):
+def extract_details(driver,url):
+
+
+    book={}
+
+
+    driver.get(url)
+
+    time.sleep(1)
+
+
+
+    try:
+
+        book["title"] = driver.find_element(
+            By.CSS_SELECTOR,
+            "div.product_main h1"
+        ).text
+
+
+    except:
+
+        book["title"]=""
+
+
+
+    try:
+
+        book["price"] = clean_price(
+            driver.find_element(
+                By.CSS_SELECTOR,
+                ".price_color"
+            ).text
+        )
+
+
+    except:
+
+        book["price"]=None
+
+
+
+    try:
+
+        book["availability"] = driver.find_element(
+            By.CSS_SELECTOR,
+            ".availability"
+        ).text.strip()
+
+
+    except:
+
+        book["availability"]=""
+
+
+
+    try:
+
+        rating = driver.find_element(
+            By.CSS_SELECTOR,
+            "p.star-rating"
+        ).get_attribute(
+            "class"
+        )
+
+
+        book["rating"] = (
+            rating
+            .replace(
+                "star-rating",
+                ""
+            )
+            .strip()
+        )
+
+
+    except:
+
+        book["rating"]=""
+
+
+
+    try:
+
+        book["description"] = driver.find_element(
+            By.CSS_SELECTOR,
+            "#product_description ~ p"
+        ).text
+
+
+    except:
+
+        book["description"]=""
+
+
+
+    book["product_type"]=""
+
+    book["reviews"]=""
+
+    book["tax"]=""
+
+
+
+    try:
+
+        rows = driver.find_elements(
+            By.CSS_SELECTOR,
+            "table.table.table-striped tr"
+        )
+
+
+        for row in rows:
+
+            text=row.text
+
+
+            if "Product Type" in text:
+
+                book["product_type"]=row.find_elements(
+                    By.TAG_NAME,
+                    "td"
+                )[0].text
+
+
+            if "Number of reviews" in text:
+
+                book["reviews"]=row.find_elements(
+                    By.TAG_NAME,
+                    "td"
+                )[0].text
+
+
+            if "Tax" in text:
+
+                book["tax"]=row.find_elements(
+                    By.TAG_NAME,
+                    "td"
+                )[0].text
+
+
+    except:
+
+        pass
+
+
+
+    book["url"]=url
+
+
+    return book
+
+
+
+# ==========================
+# SCRAPER TOUTES LES PAGES
+# ==========================
+
+def scrape_books(pages=None):
 
 
     os.makedirs(
@@ -65,44 +234,37 @@ def scrape_books(pages):
     )
 
 
-    driver = create_driver()
+    driver=create_driver()
 
 
     books=[]
 
 
+    page=1
+
+
 
     try:
 
-        for page in range(1,pages+1):
+
+        while True:
+
+
+            if pages and page > pages:
+
+                break
+
 
 
             print(
-                f"Scraping page {page}"
+                "Scraping page",
+                page
             )
 
 
-            url = (
-                f"https://books.toscrape.com/catalogue/page-{page}.html"
+            driver.get(
+                BASE_URL.format(page)
             )
-
-
-            driver.get(url)
-
-
-
-            WebDriverWait(
-                driver,
-                10
-            ).until(
-                EC.presence_of_element_located(
-                    (
-                        By.CSS_SELECTOR,
-                        "article.product_pod"
-                    )
-                )
-            )
-
 
 
             cards = driver.find_elements(
@@ -112,85 +274,30 @@ def scrape_books(pages):
 
 
 
-            products_count = len(cards)
-
-
-
             print(
                 "Livres trouvés:",
-                products_count
+                len(cards)
             )
 
+
+
+            if len(cards)==0:
+
+                print(
+                    "Fin des pages"
+                )
+
+                break
+
+
+
+            links=[]
 
 
             for card in cards:
 
 
-                book={}
-
-
-
-                # titre
-
-                book["title"] = card.find_element(
-                    By.CSS_SELECTOR,
-                    "h3 a"
-                ).get_attribute(
-                    "title"
-                )
-
-
-
-                # prix
-
-                price = card.find_element(
-                    By.CSS_SELECTOR,
-                    ".price_color"
-                ).text
-
-
-                book["price"] = clean_price(price)
-
-
-
-
-                # disponibilité
-
-                book["availability"] = card.find_element(
-                    By.CSS_SELECTOR,
-                    ".availability"
-                ).text.strip()
-
-
-
-                # nombre produits page
-
-                book["products_count"] = products_count
-
-
-
-
-                # note
-
-                rating_class = card.find_element(
-                    By.CSS_SELECTOR,
-                    "p.star-rating"
-                ).get_attribute(
-                    "class"
-                )
-
-
-                book["rating"] = rating_class.replace(
-                    "star-rating",
-                    ""
-                ).strip()
-
-
-
-
-                # url détail
-
-                detail_url = card.find_element(
+                link=card.find_element(
                     By.CSS_SELECTOR,
                     "h3 a"
                 ).get_attribute(
@@ -198,135 +305,27 @@ def scrape_books(pages):
                 )
 
 
-                old_page = driver.current_url
-
-
-                driver.get(
-                    detail_url
-                )
-
-
-                time.sleep(0.5)
+                links.append(link)
 
 
 
-                # description
-
-                try:
-
-                    book["description"] = driver.find_element(
-                        By.CSS_SELECTOR,
-                        "#product_description ~ p"
-                    ).text
+            for link in links:
 
 
-                except:
-
-                    book["description"]=""
-
-
-
-                # catégorie
-
-                try:
-
-                    book["product_type"] = driver.find_elements(
-                        By.CSS_SELECTOR,
-                        "ul.breadcrumb li"
-                    )[2].text
-
-
-                except:
-
-                    book["product_type"]=""
-
-
-
-                # reviews
-
-                try:
-
-                    table_rows = driver.find_elements(
-                        By.CSS_SELECTOR,
-                        "table.table.table-striped tr"
-                    )
-
-
-                    reviews=""
-
-
-                    for row in table_rows:
-
-                        if "Number of reviews" in row.text:
-
-                            reviews=row.find_elements(
-                                By.TAG_NAME,
-                                "td"
-                            )[0].text
-
-
-                    book["reviews"]=reviews
-
-
-                except:
-
-                    book["reviews"]=""
-
-
-
-
-                # tax
-
-                try:
-
-                    rows = driver.find_elements(
-                        By.CSS_SELECTOR,
-                        "table.table.table-striped tr"
-                    )
-
-
-                    tax=""
-
-
-                    for row in rows:
-
-                        if "Tax" in row.text:
-
-                            tax=row.find_elements(
-                                By.TAG_NAME,
-                                "td"
-                            )[0].text
-
-
-                    book["tax"]=tax
-
-
-                except:
-
-                    book["tax"]=""
-
-
-
-                books.append(
-                    book
-                )
-
-
-
-                driver.back()
-
-
-                WebDriverWait(
+                book=extract_details(
                     driver,
-                    10
-                ).until(
-                    EC.presence_of_element_located(
-                        (
-                            By.CSS_SELECTOR,
-                            "article.product_pod"
-                        )
-                    )
+                    link
                 )
+
+
+                book["products_count"]=len(cards)
+
+
+                books.append(book)
+
+
+
+            page+=1
 
 
 
@@ -336,12 +335,13 @@ def scrape_books(pages):
 
 
 
-
     return books
 
 
 
-
+# ==========================
+# CSV
+# ==========================
 
 def save_csv(data):
 
@@ -354,7 +354,7 @@ def save_csv(data):
     ) as f:
 
 
-        writer = csv.DictWriter(
+        writer=csv.DictWriter(
             f,
             fieldnames=data[0].keys()
         )
@@ -362,24 +362,25 @@ def save_csv(data):
 
         writer.writeheader()
 
-        writer.writerows(
-            data
-        )
+        writer.writerows(data)
 
 
 
 
+# ==========================
+# MAIN
+# ==========================
 
 if __name__=="__main__":
 
 
-    parser = argparse.ArgumentParser()
+    parser=argparse.ArgumentParser()
 
 
     parser.add_argument(
         "--pages",
         type=int,
-        default=5
+        default=None
     )
 
 
@@ -387,10 +388,9 @@ if __name__=="__main__":
 
 
 
-    books = scrape_books(
+    books=scrape_books(
         args.pages
     )
-
 
 
     save_csv(
@@ -399,15 +399,9 @@ if __name__=="__main__":
 
 
     print("======================")
-
-    print(
-        "CSV créé avec succès"
-    )
-
-
+    print("CSV créé avec succès")
     print(
         "Nombre livres:",
         len(books)
     )
-
     print("======================")

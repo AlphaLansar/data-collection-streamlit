@@ -1,20 +1,6 @@
-Nombre total véhicules : 100
-Prix moyen : 3138500.0 FCFA
-Prix minimum : 1500000 FCFA
-Prix maximum : 11900000 FCFA
-Kilométrage moyen : 147009.94 km
-Année moyenne : 2007.37
-
-Transmission dominante : Manuelle
-
-Marques principales :
-Peugeot : 26
-Citroen : 12
-Renault : 11
-Ford : 9
-Toyota : 7
-Nissan : 5
-Hyundai : 4
-Volkswagen : 4
-Mitsubishi : 3
-Dacia : 3
+Nombre voitures: 20
+Prix moyen: 2620000.00
+Prix maximum: 4500000
+Prix minimum: 1800000
+Kilométrage moyen: 142550.00
+Nombre marques: 11

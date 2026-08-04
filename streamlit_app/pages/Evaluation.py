@@ -2,18 +2,26 @@ import streamlit as st
 
 
 st.set_page_config(
-    page_title="Evaluation Application",
-    layout="centered"
+    page_title="Application Evaluation",
+    layout="wide"
 )
 
 
-st.title("📝 Évaluation de l'application")
+
+st.title(
+    "Application Evaluation"
+)
+
 
 
 st.write(
 """
-Votre avis nous aide à améliorer cette application de collecte,
-nettoyage et visualisation des données.
+Cette section permet d'évaluer l'expérience utilisateur
+de la plateforme Data Collection.
+
+Deux formulaires sont disponibles :
+- Google Forms
+- KoboToolbox
 """
 )
 
@@ -23,36 +31,69 @@ st.divider()
 
 
 
-# =========================
-# Google Form
-# =========================
-
-st.subheader(
-    "📄 Formulaire Google Forms"
+st.header(
+    "Formulaires d'évaluation"
 )
 
 
-google_form_url = (
-    "https://docs.google.com/forms/"
-)
+
+col1, col2 = st.columns(2)
 
 
-st.markdown(
-f"""
-<a href="{google_form_url}" target="_blank">
-<button style="
-background-color:#4285F4;
-color:white;
-padding:10px 20px;
-border:none;
-border-radius:5px;
-">
-Ouvrir Google Forms
-</button>
-</a>
-""",
-unsafe_allow_html=True
-)
+
+with col1:
+
+    st.subheader(
+        "Google Forms"
+    )
+
+
+    st.write(
+    """
+    Formulaire Google Forms pour recueillir
+    les retours des utilisateurs.
+    """
+    )
+
+
+    google_url = (
+        "https://docs.google.com/forms/d/e/"
+        "1FAIpQLSd8dvtFMb5g0aOYOZJt592TYf6_tej7HMSJuaTEC5BOAYA2Ug/"
+        "viewform?usp=dialog"
+    )
+
+
+    st.link_button(
+        "📝 Remplir Google Forms",
+        google_url
+    )
+
+
+
+with col2:
+
+    st.subheader(
+        "KoboToolbox"
+    )
+
+
+    st.write(
+    """
+    Formulaire KoboToolbox utilisant XLSForm
+    avec logique conditionnelle et validation.
+    """
+    )
+
+
+    kobo_url = (
+        "https://ee.kobotoolbox.org/x/O8ODJ0sY"
+    )
+
+
+    st.link_button(
+        "📊 Remplir KoboToolbox",
+        kobo_url
+    )
 
 
 
@@ -60,49 +101,26 @@ st.divider()
 
 
 
-# =========================
-# Kobo Form
-# =========================
-
-
-st.subheader(
-    "📱 Formulaire Kobo"
-)
-
-
-kobo_url = (
-    "https://kf.kobotoolbox.org/"
-)
-
-
-
-st.markdown(
-f"""
-<a href="{kobo_url}" target="_blank">
-<button style="
-background-color:#28a745;
-color:white;
-padding:10px 20px;
-border:none;
-border-radius:5px;
-">
-Ouvrir Kobo Form
-</button>
-</a>
-""",
-unsafe_allow_html=True
-)
-
-
-
-st.divider()
-
-
-
-st.info(
+st.success(
 """
-Merci pour votre précieux retour !
+Les deux formulaires d'évaluation sont disponibles.
 
-Vos commentaires nous aideront à améliorer l’application.
+Les données collectées permettront d'analyser :
+- l'expérience utilisateur
+- la satisfaction
+- les problèmes rencontrés
+- les suggestions d'amélioration
+"""
+)
+
+
+
+st.caption(
+"""
+Data Collection Project
+Web Scraping | Data Cleaning | Data Visualization | Evaluation
+
+Réalisé par Alpha Abdoulaye Lansar
+Master Intelligence Artificielle
 """
 )
