@@ -467,7 +467,9 @@ La plateforme finale permet :
 
 # 14. Présentation vidéo
 
-Durée : 10 minutes
+Durée : 10 minutes 
+
+https://drive.google.com/drive/folders/1wWxODpFFOMObKZKAx6scTQKA9kGxTRG_?usp=sharing
 
 ## Partie 1 — Code (8 minutes)
 
