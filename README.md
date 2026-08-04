@@ -1,17 +1,19 @@
 # Data Collection & Analytics Platform
 
-## Projet d'examen — Web Scraping, Data Cleaning, SQLite Database & Streamlit Dashboard
+## Projet d'examen — Data Collection, Web Scraping, Cleaning & Streamlit Deployment
 
-**Auteur : Alpha Abdoulaye Lansar**
+**Auteur : Alpha Abdoulaye Lansar**  
 **Formation : Master Intelligence Artificielle**
+
+Projet réalisé dans le cadre du module **Data Collection**.
 
 ---
 
 # 1. Présentation du projet
 
-Ce projet consiste à développer une plateforme complète de collecte, traitement, stockage et visualisation de données issues du web.
+Ce projet consiste à développer une plateforme complète de collecte, nettoyage, stockage et visualisation de données web.
 
-L'objectif est de construire une chaîne complète de traitement des données :
+L'objectif est de construire une chaîne complète :
 
 ```
 Sources Web
@@ -20,10 +22,10 @@ Sources Web
 Scraping Selenium
      |
      ↓
-Nettoyage des données
+Nettoyage Pandas
      |
      ↓
-Stockage SQLite
+Base SQLite
      |
      ↓
 Analyse exploratoire
@@ -37,22 +39,23 @@ Evaluation utilisateur
 
 La plateforme permet :
 
-* la collecte automatique de données web ;
-* le nettoyage et la préparation des datasets ;
-* le stockage dans une base de données SQL ;
-* l'exploration interactive des données ;
-* le téléchargement des résultats ;
-* l'accès aux formulaires d'évaluation.
+- la collecte automatique de données web ;
+- le nettoyage et la transformation des données ;
+- le stockage dans une base SQL ;
+- l'analyse exploratoire ;
+- la visualisation interactive ;
+- l'export des datasets ;
+- l'évaluation utilisateur.
 
 ---
 
 # 2. Sources de données
 
-Le projet utilise deux sources de données conformément aux exigences de l'examen.
+Deux sources ont été utilisées.
 
 ---
 
-# Source 1 — Books To Scrape
+# Source 1 : Books To Scrape
 
 URL :
 
@@ -60,29 +63,36 @@ URL :
 https://books.toscrape.com/catalogue/page-1.html
 ```
 
-Méthode :
+## Méthode
+
+Scraping réalisé avec :
+
+- Selenium WebDriver
+- Pagination automatique
+
+## Variables collectées
+
+| Variable | Description |
+|-|-|
+| title | Titre du livre |
+| price | Prix |
+| availability | Disponibilité |
+| products_count | Nombre de produits |
+| rating | Note |
+| reviews | Nombre de reviews |
+| description | Description |
+| product_type | Catégorie |
+| tax | Taxe |
+
+Dataset obtenu :
 
 ```
-Selenium WebDriver
+1000 livres
 ```
-
-Variables extraites :
-
-| Variable       | Description                 |
-| -------------- | --------------------------- |
-| title          | Titre du livre              |
-| price          | Prix                        |
-| availability   | Disponibilité               |
-| products_count | Nombre de produits par page |
-| rating         | Note du produit             |
-| reviews        | Nombre de reviews           |
-| description    | Description                 |
-| product_type   | Catégorie                   |
-| tax            | Taxe                        |
 
 ---
 
-# Source 2 — Gaaraas Dakar Auto
+# Source 2 : Gaaraas Dakar Auto
 
 URL :
 
@@ -90,23 +100,27 @@ URL :
 https://www.gaaraas.com/fr/users/dakar-auto?page=1
 ```
 
-Méthode :
+## Méthode
+
+Scraping avec Selenium sur les annonces automobiles.
+
+## Variables collectées
+
+| Variable | Description |
+|-|-|
+| brand | Marque |
+| model | Modèle |
+| year | Année |
+| price | Prix |
+| mileage | Kilométrage |
+| transmission | Boîte de vitesse |
+| region | Région |
+
+Dataset obtenu :
 
 ```
-Selenium WebDriver
+245 véhicules
 ```
-
-Variables extraites :
-
-| Variable     | Description     |
-| ------------ | --------------- |
-| brand        | Marque          |
-| model        | Modèle          |
-| year         | Année           |
-| price        | Prix            |
-| mileage      | Kilométrage     |
-| transmission | Type de boîte   |
-| region       | Région de vente |
 
 ---
 
@@ -114,36 +128,36 @@ Variables extraites :
 
 ## Langage
 
-* Python
+- Python
 
 ## Web Scraping
 
-* Selenium WebDriver
+- Selenium WebDriver
 
-## Data Processing
+## Nettoyage
 
-* Pandas
-* NumPy
+- Pandas
+- NumPy
 
 ## Base de données
 
-* SQLite
-* SQLAlchemy
+- SQLite
+- SQLAlchemy
 
 ## Visualisation
 
-* Streamlit
-* Matplotlib
-* Plotly
+- Streamlit
+- Plotly
+- Matplotlib
+
+## No-Code Scraping
+
+- Web Scraper Chrome Extension
 
 ## Versioning
 
-* Git
-* GitHub
-
-## Scraping No-Code
-
-* Web Scraper Chrome Extension
+- Git
+- GitHub
 
 ---
 
@@ -172,31 +186,16 @@ exam-data-collection-final/
 │
 ├── data/
 │   ├── raw/
-│   │   ├── books.csv
-│   │   └── cars.csv
-│   │
 │   ├── cleaned/
-│   │   ├── books_clean.csv
-│   │   └── cars_clean.csv
-│   │
 │   └── nocode/
 │
 ├── reports/
-│   ├── figures/
-│   └── statistics/
-│
-├── forms/
 │
 ├── streamlit_app/
 │   ├── Home.py
 │   └── pages/
-│       ├── 1_Scraping.py
-│       ├── 2_NoCode_WebScraper.py
-│       ├── Books_Dashboard.py
-│       ├── Cars_Dashboard.py
-│       ├── Database.py
-│       ├── Download.py
-│       └── Evaluation.py
+│
+├── books_cars.db
 │
 ├── requirements.txt
 │
@@ -207,37 +206,33 @@ exam-data-collection-final/
 
 # 5. Installation
 
-## Cloner le projet
+Cloner le projet :
 
 ```bash
 git clone https://github.com/AlphaLansar/data-collection-streamlit.git
 ```
 
-Entrer dans le dossier :
+Entrer dans le projet :
 
 ```bash
 cd exam-data-collection-final
 ```
 
----
-
-# 6. Environnement virtuel
-
-Création :
+Créer l'environnement :
 
 ```bash
 python3 -m venv .venv
 ```
 
-Activation Linux :
+Activer :
+
+Linux :
 
 ```bash
 source .venv/bin/activate
 ```
 
----
-
-# 7. Installation des dépendances
+Installer les dépendances :
 
 ```bash
 pip install -r requirements.txt
@@ -245,11 +240,9 @@ pip install -r requirements.txt
 
 ---
 
-# 8. Scraping Selenium
+# 6. Scraping Selenium
 
 ## Books
-
-Commande :
 
 ```bash
 python scraper/books_scraper.py
@@ -265,8 +258,6 @@ data/raw/books.csv
 
 ## Cars
 
-Commande :
-
 ```bash
 python scraper/cars_scraper.py
 ```
@@ -279,7 +270,7 @@ data/raw/cars.csv
 
 ---
 
-# 9. Nettoyage des données
+# 7. Nettoyage
 
 ## Books
 
@@ -287,7 +278,7 @@ data/raw/cars.csv
 python cleaning/clean_books.py
 ```
 
-Production :
+Sortie :
 
 ```
 data/cleaned/books_clean.csv
@@ -301,7 +292,7 @@ data/cleaned/books_clean.csv
 python cleaning/clean_cars.py
 ```
 
-Production :
+Sortie :
 
 ```
 data/cleaned/cars_clean.csv
@@ -309,68 +300,45 @@ data/cleaned/cars_clean.csv
 
 ---
 
-# 10. Intégration Base de données SQL
+# 8. Base de données SQLite
 
-La plateforme utilise SQLite.
-
-Création des tables :
+Import Books :
 
 ```bash
 python -m database.import_books
 ```
 
+Import Cars :
+
 ```bash
 python -m database.import_cars
 ```
 
-Base générée :
+Base créée :
 
 ```
 books_cars.db
 ```
 
-Tables disponibles :
+Tables :
 
 ```
 books
 cars
 ```
 
-Vérification :
+Résultats :
 
-```sql
-SELECT name FROM sqlite_master WHERE type='table';
+```
+Books : 1000 lignes
+Cars  : 245 lignes
 ```
 
 ---
 
-# 11. Application Streamlit
+# 9. Scraping No-Code
 
-Lancement :
-
-```bash
-streamlit run streamlit_app/Home.py
-```
-
----
-
-# 12. Modules de l'application
-
-## Web Scraping Pipeline
-
-Cette page présente :
-
-* les datasets collectés ;
-* l'état des fichiers ;
-* l'architecture du pipeline.
-
----
-
-## No-Code Web Scraper
-
-Cette partie correspond à la contrainte examen :
-
-Outil utilisé :
+Une deuxième collecte a été réalisée avec :
 
 ```
 Web Scraper Chrome Extension
@@ -378,75 +346,85 @@ Web Scraper Chrome Extension
 
 Objectif :
 
-* collecter des données brutes ;
-* exporter les fichiers CSV ;
-* présenter les résultats sans nettoyage.
+- collecter les données brutes ;
+- conserver les données sans nettoyage ;
+- comparer avec la collecte Selenium.
 
-Les fichiers sont stockés dans :
+Datasets :
 
 ```
-data/nocode/
+data/nocode/books/books.csv
+
+data/nocode/cars/cars.csv
 ```
+
+---
+
+# 10. Application Streamlit
+
+Lancement local :
+
+```bash
+streamlit run streamlit_app/Home.py
+```
+
+---
+
+# Modules disponibles
+
+## Scraping
+
+Présentation du pipeline Selenium.
+
+---
+
+## No-Code Web Scraper
+
+Visualisation des données collectées avec l'extension Web Scraper.
 
 ---
 
 ## Books Dashboard
 
-Fonctionnalités :
+Analyse :
 
-* nombre total de livres ;
-* prix moyen ;
-* distribution des prix ;
-* analyse des notes ;
-* exploration des catégories ;
-* visualisation interactive.
+- prix ;
+- disponibilité ;
+- notes ;
+- catégories ;
+- statistiques.
 
 ---
 
 ## Cars Dashboard
 
-Fonctionnalités :
+Analyse :
 
-* nombre de véhicules ;
-* prix moyen ;
-* marques disponibles ;
-* kilométrage ;
-* transmission ;
-* analyse des années ;
-* filtres interactifs.
+- marques ;
+- prix ;
+- kilométrage ;
+- année ;
+- transmission.
 
 ---
 
-## Database Explorer
+## Database
 
-Cette interface permet :
+Visualisation :
 
-* connexion SQLite ;
-* visualisation des tables ;
-* aperçu SQL ;
-* statistiques des données.
-
-Pipeline présenté :
-
-```
-Scraping
-↓
-Cleaning
-↓
-SQLite
-↓
-Dashboard
-```
+- tables SQLite ;
+- statistiques ;
+- aperçu SQL.
 
 ---
 
-## Download Center
+## Download
 
-Permet le téléchargement :
+Téléchargement :
 
-* datasets nettoyés CSV ;
-* datasets bruts ;
-* base SQLite.
+- CSV nettoyés ;
+- CSV bruts ;
+- base SQLite.
 
 ---
 
@@ -454,81 +432,65 @@ Permet le téléchargement :
 
 Accès aux formulaires :
 
-* Google Forms ;
-* KoboToolbox.
+- Google Forms
+- KoboToolbox
 
 ---
 
-# 13. Traitement des données
+# 11. Application déployée
 
-Les opérations réalisées :
+Streamlit Cloud :
 
-* suppression des valeurs manquantes ;
-* conversion des types ;
-* nettoyage des prix ;
-* nettoyage du kilométrage ;
-* traitement des doublons ;
-* standardisation des colonnes.
+https://data-collection-app-drnxvwc4qgjpgmfxacw36y.streamlit.app/
 
 ---
 
-# 14. Résultats obtenus
+# 12. Repository GitHub
+
+https://github.com/AlphaLansar/data-collection-streamlit
+
+---
+
+# 13. Résultats
 
 La plateforme finale permet :
 
-✓ collecte automatique avec Selenium
-✓ scraping No-Code avec Web Scraper
-✓ nettoyage des données
-✓ stockage SQL SQLite
-✓ analyse exploratoire
-✓ dashboards interactifs
-✓ export des données
-✓ évaluation utilisateur
+✅ Scraping Selenium  
+✅ Scraping No-Code Web Scraper  
+✅ Nettoyage automatique  
+✅ Base SQL SQLite  
+✅ Dashboards interactifs  
+✅ Export des données  
+✅ Evaluation utilisateur  
 
 ---
 
-# 15. Déploiement
+# 14. Présentation vidéo
 
-Application Streamlit :
+Durée : 10 minutes
 
-```
-Lien à compléter
-```
-
-Repository GitHub :
-
-```
-Lien à compléter
-```
-
----
-
-# 16. Présentation vidéo
-
-Durée prévue : 10 minutes
-
-## Partie 1 — Explication du code (8 minutes)
+## Partie 1 — Code (8 minutes)
 
 Présentation :
 
-* architecture ;
-* scraping Selenium ;
-* nettoyage ;
-* base SQL ;
-* dashboards.
+- architecture ;
+- scraping ;
+- nettoyage ;
+- base SQL ;
+- dashboards.
 
 ## Partie 2 — Démonstration (2 minutes)
 
 Présentation :
 
-* lancement application ;
-* dashboards ;
-* téléchargement ;
-* formulaires.
+- application Streamlit ;
+- visualisation ;
+- téléchargement ;
+- formulaires.
 
 ---
 
-# 17. Auteur
+# Auteur
 
 ## Alpha Abdoulaye Lansar
 
@@ -536,17 +498,17 @@ Master Intelligence Artificielle
 
 Domaines :
 
-* Artificial Intelligence
-* Data Science
-* Robotics
-* Edge AI
-* Intelligent Systems
+- Artificial Intelligence
+- Data Science
+- Robotics
+- Edge AI
+- Intelligent Systems
 
 ---
 
 # Conclusion
 
-Ce projet met en œuvre une chaîne complète de valorisation des données :
+Ce projet réalise une chaîne complète :
 
 ```
 Collect
@@ -562,4 +524,4 @@ Visualize
 Evaluate
 ```
 
-Il représente une application complète de Data Collection combinant Web Scraping, Data Engineering et Data Visualization.
+Une plateforme complète de collecte et exploitation des données web.
